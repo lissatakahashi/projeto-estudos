@@ -4,12 +4,13 @@ import AppShell from '../components/layout/AppShell';
 import AboutPage from '../pages/About/AboutPage';
 import HomePage from '../pages/Home/HomePage';
 import MetodologiaPage from '../pages/Metodologia/MetodologiaPage';
+import PomodoroPage from '../pages/Pomodoro/PomodoroPage';
 
 const Router: React.FC = () => (
   <AppShell>
     <Routes>
       <Route path="/" element={<HomePage />} />
-  <Route path="/pomodoro" element={<div>Pomodoro (placeholder)</div>} />
+  <Route path="/pomodoro" element={<PomodoroPage />} />
       <Route path="/shop" element={<div>Shop (placeholder)</div>} />
       <Route path="/inventory" element={<div>Inventory (placeholder)</div>} />
       <Route path="/history" element={<div>History (placeholder)</div>} />
