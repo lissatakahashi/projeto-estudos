@@ -29,7 +29,7 @@ Antes de mexer em UI:
 
 * Refinar o tipo `Pomodoro` para algo alinhado ao backlog, incluindo pelo menos:
 
-  * `id`, `mode` (focus / short_break / long_break),
+  * `pomodoroId` (type `PomodoroId`), `mode` (focus / short_break / long_break),
   * `status` (idle / running / paused / finished),
   * `duration` planejada,
   * `remaining` (em segundos),

@@ -8,9 +8,12 @@ Entregar um "núcleo de sessão" Pomodoro funcional no protótipo: domínio (tip
 
 Essa implementação estabelece a base necessária para a gamificação (crédito de moedas), histórico e integrações futuras (loja, badges), evitando retrabalho ao definir o domínio e a fonte única de verdade (single source of truth).
 
-## Arquivos alterados / criados
+-## Arquivos alterados / criados
 
-- `tcc-prototype-web/src/domain/pomodoro/types.ts` — refinamento do tipo `Pomodoro` e adição do tipo `PomodoroHistoryItem`.
+- `tcc-prototype-web/src/domain/pomodoro/types/PomodoroMode.ts` — tipo `PomodoroMode` (focus / short_break / long_break).
+- `tcc-prototype-web/src/domain/pomodoro/types/PomodoroStatus.ts` — tipo `PomodoroStatus` (idle / running / paused / finished).
+- `tcc-prototype-web/src/domain/pomodoro/types/Pomodoro.ts` — tipo `Pomodoro` com `pomodoroId: PomodoroId` e campos de sessão.
+- `tcc-prototype-web/src/domain/pomodoro/types/PomodoroHistoryItem.ts` — tipo `PomodoroHistoryItem` com `pomodoroHistoryItemId: PomodoroHistoryItemId`.
 - `tcc-prototype-web/src/state/usePomodoroStore.ts` — store Zustand com ações de domínio (start, tick, pause, resume, complete, penalize), persistência em `localStorage` e histórico.
 - `tcc-prototype-web/src/pages/Pomodoro/PomodoroPage.tsx` — página mínima do Pomodoro: display do tempo, modo atual, botões Iniciar/Pausar/Retomar/Encerrar, handlers de visibilidade e timer.
 - `tcc-prototype-web/src/app/router.tsx` — rota `/pomodoro` agora aponta para `PomodoroPage` (substitui o placeholder).
@@ -18,7 +21,7 @@ Essa implementação estabelece a base necessária para a gamificação (crédit
 
 ## O que foi implementado e por quê
 
-1. Tipos do domínio (`types.ts`)
+1. Tipos do domínio (pasta `types/`)
 
    - Foi ampliado o tipo `Pomodoro` com campos necessários para controlar o ciclo: `mode`, `status`, `duration`, `remaining`, `isValid`, `lostFocusSeconds`, timestamps (`startedAt`, `endedAt`) e `invalidReason`.
    - Adicionamos `PomodoroHistoryItem` para armazenar um log simples ao finalizar ou invalidar uma sessão.

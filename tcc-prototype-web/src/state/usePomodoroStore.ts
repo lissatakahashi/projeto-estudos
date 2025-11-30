@@ -97,7 +97,7 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
     if (!p) return;
     const endedAt = new Date().toISOString();
     const historyItem: PomodoroHistoryItem = {
-      id: p.id,
+      pomodoroHistoryItemId: p.pomodoroId,
       mode: p.mode,
       start: p.startedAt ?? endedAt,
       end: endedAt,
