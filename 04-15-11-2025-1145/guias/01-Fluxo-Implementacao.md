@@ -8,9 +8,6 @@ Hoje o protótipo já tem:
 * Domínio de Pomodoro só como *stub* (`types` + `start/complete/penalize` com `console.log`).
 
 Ou seja: a Fase 1 está praticamente encaixada, e o maior “buraco” é justamente o **fluxo real de Pomodoro**. Então eu começaria assim:
-
----
-
 ## Primeira etapa sugerida: “Núcleo de Sessão Pomodoro + Estado Global”
 
 **Objetivo:** sair do placeholder em `/pomodoro` e ter **um ciclo completo de foco** funcionando, com:
@@ -35,6 +32,14 @@ Antes de mexer em UI:
   * `remaining` (em segundos),
   * `isValid` (booleano),
   * campos para anti-trapaça (ex.: `lostFocusSeconds`, `invalidReason`).
+  
+  Observação: os tipos do domínio agora residem em `src/domain/pomodoro/types/` e
+  cada arquivo contém documentação inline (comentários) descrevendo campos e
+  intenção de uso (ex.: `pomodoroId`, `duration`, `lostFocusSeconds`).
+
+  Nota: os tipos literais/enumeradores (`PomodoroMode`, `PomodoroStatus`) foram
+  movidos para `src/domain/pomodoro/types/enums/` para ficar claro que são
+  valores restritos e fáceis de localizar na base de código.
 * Definir as regras de negócio básicas:
 
   * Quando uma sessão começa, qual a duração padrão (25/5/15)?

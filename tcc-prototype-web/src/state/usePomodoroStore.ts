@@ -1,5 +1,14 @@
 import create from 'zustand';
 import { Pomodoro, PomodoroHistoryItem } from '../domain/pomodoro/types';
+import {
+  createPomodoro as createPomodoroSupabase,
+  updatePomodoro as updatePomodoroSupabase,
+  listPomodoros as listPomodorosSupabase,
+  mapPomodoroToRecord,
+  mapRecordToPomodoro,
+} from '../lib/supabase/pomodoroService';
+
+import { supabase } from '../lib/supabase/client';
 
 const STORAGE_KEY = 'pomodoro_state_v1';
 const DEFAULT_COINS = 0;
@@ -10,15 +19,18 @@ type PomodoroStore = {
   economy: { coins: number };
   history: PomodoroHistoryItem[];
   schemaVersion: number;
+  userId: string | null;
   // actions
-  startPomodoro: (opts?: { duration?: number; mode?: Pomodoro['mode'] }) => void;
+  setUserId: (id: string | null) => void;
+  startPomodoro: (opts?: { duration?: number; mode?: Pomodoro['mode'] }) => Promise<void>;
   tickPomodoro: () => void;
-  pausePomodoro: () => void;
-  resumePomodoro: () => void;
-  completePomodoro: () => void;
-  penalizeLostFocus: (seconds: number) => void;
+  pausePomodoro: () => Promise<void>;
+  resumePomodoro: () => Promise<void>;
+  completePomodoro: () => Promise<void>;
+  penalizeLostFocus: (seconds: number) => Promise<void>;
   addCoins: (amount: number) => void;
   loadFromStorage: () => void;
+  loadHistory: () => Promise<void>;
   clearExpiredSession: () => void;
 };
 
@@ -41,22 +53,46 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
   economy: { coins: DEFAULT_COINS },
   history: [],
   schemaVersion: 1,
+  userId: null,
 
-  startPomodoro: (opts = {}) => {
+  setUserId: (id) => {
+    set({ userId: id });
+    if (id) {
+      get().loadHistory();
+    }
+  },
+
+  startPomodoro: async (opts = {}) => {
     const duration = opts.duration ?? 25 * 60;
     const mode = opts.mode ?? 'focus';
+    const initialId = Date.now().toString();
     const p: Pomodoro = {
-      id: Date.now().toString(),
+      pomodoroId: initialId,
+      title: opts.mode === 'focus' ? 'Foco' : 'Pausa',
       mode,
-      status: 'running',
+      status: 'running' as const,
       duration,
       remaining: duration,
       isValid: true,
       lostFocusSeconds: 0,
       startedAt: new Date().toISOString(),
     };
+
     set({ pomodoro: p });
     saveToStorage({ pomodoro: p, economy: get().economy, history: get().history });
+
+    // Sync with Supabase if logged in
+    const { userId } = get();
+    if (userId) {
+      const record = mapPomodoroToRecord(p, userId);
+      const { data, error } = await createPomodoroSupabase(record);
+      if (data && !error) {
+        // Update local pomodoro with the Supabase UUID
+        set((state) => ({
+          pomodoro: state.pomodoro ? { ...state.pomodoro, pomodoroId: data.pomodoroId } : null
+        }));
+      }
+    }
   },
 
   tickPomodoro: () => {
@@ -73,25 +109,33 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
     saveToStorage({ pomodoro: updated, economy: s.economy, history: s.history });
   },
 
-  pausePomodoro: () => {
+  pausePomodoro: async () => {
     const s = get();
     const p = s.pomodoro;
     if (!p) return;
-    const updated = { ...p, status: 'paused' };
+    const updated: Pomodoro = { ...p, status: 'paused' as const };
     set({ pomodoro: updated });
     saveToStorage({ pomodoro: updated, economy: s.economy, history: s.history });
+
+    if (s.userId && p.pomodoroId.length > 20) { // Check if it's a UUID
+      await updatePomodoroSupabase(p.pomodoroId, { isComplete: false });
+    }
   },
 
-  resumePomodoro: () => {
+  resumePomodoro: async () => {
     const s = get();
     const p = s.pomodoro;
     if (!p) return;
-    const updated = { ...p, status: 'running' };
+    const updated: Pomodoro = { ...p, status: 'running' as const };
     set({ pomodoro: updated });
     saveToStorage({ pomodoro: updated, economy: s.economy, history: s.history });
+
+    if (s.userId && p.pomodoroId.length > 20) {
+      await updatePomodoroSupabase(p.pomodoroId, { isComplete: false });
+    }
   },
 
-  completePomodoro: () => {
+  completePomodoro: async () => {
     const s = get();
     const p = s.pomodoro;
     if (!p) return;
@@ -107,25 +151,43 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
       invalidReason: p.invalidReason,
     };
     const newHistory = [historyItem, ...s.history].slice(0, 200);
-    const updatedPomodoro = { ...p, status: 'finished', endedAt };
+    const updatedPomodoro: Pomodoro = { ...p, status: 'finished' as const, endedAt };
     set({ pomodoro: null, history: newHistory });
+
     // credit coins only if valid
     if (p.isValid) {
       const coinsToAdd = 5; // configurable later
       get().addCoins(coinsToAdd);
     }
     saveToStorage({ pomodoro: null, economy: get().economy, history: newHistory });
+
+    // Sync with Supabase
+    if (s.userId && p.pomodoroId.length > 20) {
+      const recordUpdates = mapPomodoroToRecord(updatedPomodoro, s.userId);
+      await updatePomodoroSupabase(p.pomodoroId, {
+        isComplete: true,
+        endedAt,
+        metadata: recordUpdates.metadata
+      });
+    }
   },
 
-  penalizeLostFocus: (seconds: number) => {
+  penalizeLostFocus: async (seconds: number) => {
     const s = get();
     const p = s.pomodoro;
     if (!p || p.status !== 'running') return;
     const lost = p.lostFocusSeconds + seconds;
     const isValid = lost <= LOST_FOCUS_THRESHOLD;
-    const updated = { ...p, lostFocusSeconds: lost, isValid, invalidReason: isValid ? undefined : 'lost_focus' };
+    const updated: Pomodoro = { ...p, lostFocusSeconds: lost, isValid, invalidReason: isValid ? undefined : 'lost_focus' };
     set({ pomodoro: updated });
     saveToStorage({ pomodoro: updated, economy: s.economy, history: s.history });
+
+    if (s.userId && p.pomodoroId.length > 20) {
+      const recordUpdates = mapPomodoroToRecord(updated, s.userId);
+      await updatePomodoroSupabase(p.pomodoroId, {
+        metadata: recordUpdates.metadata
+      });
+    }
   },
 
   addCoins: (amount: number) => {
@@ -147,6 +209,34 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
     }
   },
 
+  loadHistory: async () => {
+    const { userId } = get();
+    if (!userId) return;
+
+    const { data, error } = await listPomodorosSupabase(userId);
+    if (!error && data) {
+      // Map records to history items
+      const historyItems: PomodoroHistoryItem[] = data
+        .filter(r => r.isComplete)
+        .map(r => {
+          const p = mapRecordToPomodoro(r);
+          return {
+            pomodoroHistoryItemId: p.pomodoroId,
+            mode: p.mode,
+            start: p.startedAt!,
+            end: p.endedAt!,
+            duration: p.duration,
+            actualDuration: p.duration, // Simplified
+            isValid: p.isValid,
+            invalidReason: p.invalidReason,
+          };
+        });
+
+      set({ history: historyItems });
+      saveToStorage({ pomodoro: get().pomodoro, economy: get().economy, history: historyItems });
+    }
+  },
+
   clearExpiredSession: () => {
     const s = get();
     const p = s.pomodoro;
@@ -160,6 +250,11 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
     }
   },
 }));
+
+// Listen for Auth changes
+supabase.auth.onAuthStateChange((_event, session) => {
+  usePomodoroStore.getState().setUserId(session?.user?.id ?? null);
+});
 
 // try to initialize from storage
 try {

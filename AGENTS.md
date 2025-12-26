@@ -30,3 +30,9 @@ Sempre que houver pendências de commit:
 - Solicite revisão de outros membros.
 - Aguarde aprovação e testes antes do merge.
 - Documente o processo para referência futura.
+
+---
+
+## Regras de Uso de Ferramentas
+
+- Sempre que precisar de documentação atualizada de bibliotecas, pacotes ou ferramentas, utilize obrigatoriamente o MCP server `context7`. Ele garante que as informações estejam de acordo com as versões mais recentes.
