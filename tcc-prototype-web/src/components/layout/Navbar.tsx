@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -13,6 +13,8 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import MenuIcon from '@mui/icons-material/Menu';
+import { useAuthSession } from '../../lib/supabase/hooks';
+import supabase from '../../lib/supabase/client';
 
 const navLinks = [
   { to: '/pomodoro', label: 'Pomodoro' },
@@ -24,6 +26,13 @@ const navLinks = [
 
 const Navbar: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const session = useAuthSession();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/');
+  };
 
   return (
     <AppBar
@@ -60,15 +69,43 @@ const Navbar: React.FC = () => {
           <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
             <ThemeToggle />
           </Box>
-          <Button
-            component={RouterLink}
-            to="/pomodoro"
-            variant="contained"
-            color="primary"
-            sx={{ borderRadius: '999px', px: 3, textTransform: 'none' }}
-          >
-            Começar
-          </Button>
+
+          {session ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Typography variant="body2" sx={{ display: { xs: 'none', lg: 'block' } }}>
+                {session.user.email}
+              </Typography>
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={handleLogout}
+                sx={{ borderRadius: '999px', px: 3, textTransform: 'none' }}
+              >
+                Sair
+              </Button>
+            </Box>
+          ) : (
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                component={RouterLink}
+                to="/login"
+                variant="outlined"
+                color="primary"
+                sx={{ borderRadius: '999px', px: 3, textTransform: 'none' }}
+              >
+                Entrar
+              </Button>
+              <Button
+                component={RouterLink}
+                to="/register"
+                variant="contained"
+                color="primary"
+                sx={{ borderRadius: '999px', px: 3, textTransform: 'none' }}
+              >
+                Registrar
+              </Button>
+            </Box>
+          )}
 
           <IconButton
             edge="end"
@@ -93,9 +130,20 @@ const Navbar: React.FC = () => {
               </ListItem>
             ))}
             <ListItem>
-              <Button component={RouterLink} to="/pomodoro" variant="contained" color="primary" fullWidth>
-                Começar
-              </Button>
+              {session ? (
+                <Button variant="outlined" color="primary" fullWidth onClick={handleLogout}>
+                  Sair ({session.user.email})
+                </Button>
+              ) : (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: '100%' }}>
+                  <Button component={RouterLink} to="/login" variant="outlined" color="primary" fullWidth>
+                    Entrar
+                  </Button>
+                  <Button component={RouterLink} to="/register" variant="contained" color="primary" fullWidth>
+                    Registrar
+                  </Button>
+                </Box>
+              )}
             </ListItem>
           </List>
         </Box>

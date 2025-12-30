@@ -8,6 +8,8 @@ services:
       - /app/node_modules
     ports:
       - "4174:4174"
+    env_file:
+      - .env
     environment:
       NODE_ENV: production
     stdin_open: true

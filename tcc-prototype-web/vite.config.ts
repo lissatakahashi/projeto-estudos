@@ -5,5 +5,10 @@ import react from '@vitejs/plugin-react';
 // migrated to MUI and CSS-in-JS.
 export default defineConfig({
   plugins: [react()],
-  server: { port: 5174 },
+  server: {
+    port: 5174,
+    watch: {
+      usePolling: true,
+    },
+  },
 });
