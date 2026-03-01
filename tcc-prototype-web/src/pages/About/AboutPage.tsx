@@ -28,7 +28,7 @@ const AboutPage: React.FC = () => {
           </Typography>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <Button component={RouterLink} to="/" variant="outlined" color="inherit" aria-label="Voltar para a página inicial">
-              ← Voltar à Home
+              ← Voltar à home
             </Button>
             <Button component={RouterLink} to="/metodologia" variant="contained" color="primary" aria-label="Conhecer a metodologia">
               Conheça a metodologia
@@ -68,7 +68,7 @@ const AboutPage: React.FC = () => {
                   O método Pomodoro estrutura o tempo em blocos crescendo a eficiência. A gamificação adiciona micro-recompensas que tornam a prática consistente e motivadora.
                 </Typography>
                 <Stack spacing={1} sx={{ mt: 2 }}>
-                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}><Icon emoji="⏱️" label="Cronômetro"/><Typography>25min de estudo + pausas</Typography></Box>
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}><Icon emoji="⏱️" label="Cronômetro"/><Typography>25 minutos de estudo + pausas</Typography></Box>
                   <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}><Icon emoji="🪙" label="Moedas"/><Typography>Moedas por ciclos concluídos</Typography></Box>
                   <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}><Icon emoji="🏆" label="Conquistas"/><Typography>Conquistas por consistência</Typography></Box>
                 </Stack>
@@ -80,7 +80,7 @@ const AboutPage: React.FC = () => {
 
       <Box component="section" sx={{ py: 4, bgcolor: 'background.default' }} aria-labelledby="como-title">
         <Box sx={{ maxWidth: 1000, mx: 'auto', px: { xs: 2, sm: 3 } }}>
-          <Typography id="como-title" component="h2" variant="h6" sx={{ mb: 2 }}>Como funciona a plataforma</Typography>
+          <Typography id="como-title" component="h2" variant="h6" sx={{ mb: 2 }}>Como Funciona a Plataforma</Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
