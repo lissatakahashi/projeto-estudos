@@ -10,43 +10,56 @@ import {
     Typography
 } from '@mui/material';
 import React, { useState } from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import supabase from '../../lib/supabase/client';
 
-const LoginPage: React.FC = () => {
-    const navigate = useNavigate();
+const ForgotPasswordPage: React.FC = () => {
     const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState(false);
 
-    const handleLogin = async (e: React.FormEvent) => {
+    const getRedirectTo = () => {
+        const configuredBaseUrl = import.meta.env.VITE_AUTH_REDIRECT_URL?.trim();
+
+        if (configuredBaseUrl) {
+            try {
+                return new URL('/reset-password', configuredBaseUrl).toString();
+            } catch {
+                return `${window.location.origin}/reset-password`;
+            }
+        }
+
+        return `${window.location.origin}/reset-password`;
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
 
-        const { error: loginError } = await supabase.auth.signInWithPassword({
-            email,
-            password,
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: getRedirectTo(),
         });
 
-        if (loginError) {
-            setError(loginError.message);
+        if (resetError) {
+            setError(resetError.message);
             setLoading(false);
             return;
         }
 
-        navigate('/pomodoro');
+        setSuccess(true);
+        setLoading(false);
     };
 
     return (
         <Container maxWidth="xs" sx={{ mt: 8, mb: 4 }}>
             <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
                 <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ fontWeight: 700 }}>
-                    Entrar
+                    Recuperar senha
                 </Typography>
                 <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
-                    Acesse sua conta para sincronizar seu progresso
+                    Informe seu e-mail para receber o link de redefinição
                 </Typography>
 
                 {error && (
@@ -55,7 +68,13 @@ const LoginPage: React.FC = () => {
                     </Alert>
                 )}
 
-                <Box component="form" onSubmit={handleLogin} noValidate>
+                {success && (
+                    <Alert severity="success" sx={{ mb: 2 }}>
+                        Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha.
+                    </Alert>
+                )}
+
+                <Box component="form" onSubmit={handleSubmit} noValidate>
                     <TextField
                         margin="normal"
                         required
@@ -67,39 +86,21 @@ const LoginPage: React.FC = () => {
                         autoFocus
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        disabled={loading}
-                    />
-                    <TextField
-                        margin="normal"
-                        required
-                        fullWidth
-                        name="password"
-                        label="Senha"
-                        type="password"
-                        id="password"
-                        autoComplete="current-password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        disabled={loading}
+                        disabled={loading || success}
                     />
                     <Button
                         type="submit"
                         fullWidth
                         variant="contained"
                         size="large"
-                        disabled={loading}
+                        disabled={loading || success}
                         sx={{ mt: 3, mb: 2, borderRadius: '999px', py: 1.5 }}
                     >
-                        {loading ? <CircularProgress size={24} color="inherit" /> : 'Entrar'}
+                        {loading ? <CircularProgress size={24} color="inherit" /> : 'Enviar link'}
                     </Button>
-                    <Box sx={{ textAlign: 'right', mb: 2 }}>
-                        <Link component={RouterLink} to="/forgot-password" variant="body2">
-                            Esqueci minha senha
-                        </Link>
-                    </Box>
                     <Box sx={{ textAlign: 'center' }}>
-                        <Link component={RouterLink} to="/register" variant="body2">
-                            {"Não tem uma conta? Registre-se"}
+                        <Link component={RouterLink} to="/login" variant="body2">
+                            Voltar para login
                         </Link>
                     </Box>
                 </Box>
@@ -108,4 +109,4 @@ const LoginPage: React.FC = () => {
     );
 };
 
-export default LoginPage;
+export default ForgotPasswordPage;

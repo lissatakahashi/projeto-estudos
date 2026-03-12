@@ -61,6 +61,21 @@ docker compose up --build
 
 Acessar: http://localhost:5174
 
+### Supabase + recuperação de senha no Docker
+
+Para o fluxo de "Esqueci minha senha" funcionar corretamente, configure a URL base do app no `.env`:
+
+```bash
+VITE_AUTH_REDIRECT_URL=http://localhost:5174
+```
+
+O link enviado por e-mail apontará para `/reset-password` usando essa base.
+
+No painel do Supabase (`Authentication` -> `URL Configuration`), adicione também na allow list:
+
+- `http://localhost:5174/reset-password`
+- (opcional) `http://localhost:4174/reset-password` para preview/produção local via Docker
+
 ### Observações sobre o tema
 
 Este projeto foi migrado para usar MUI (Material UI) para componentes e tema. O provider padrão do MUI (`ThemeProvider`) e `CssBaseline` já estão configurados em `src/main.tsx` e o tema base está em `src/theme.ts`.
