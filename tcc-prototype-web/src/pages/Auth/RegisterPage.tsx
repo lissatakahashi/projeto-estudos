@@ -1,52 +1,95 @@
-import React, { useState } from 'react';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import supabase from '../../lib/supabase/client';
 import {
-    Container,
-    Paper,
-    Typography,
-    TextField,
-    Button,
-    Box,
-    Link,
     Alert,
-    CircularProgress
+    Box,
+    Button,
+    Checkbox,
+    CircularProgress,
+    Container,
+    FormControlLabel,
+    FormHelperText,
+    Link,
+    Paper,
+    Stack,
+    TextField,
+    Typography,
 } from '@mui/material';
+import React, { useMemo, useState } from 'react';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import {
+    REGISTER_FORM_INITIAL_VALUES,
+    type RegisterFieldName,
+    type RegisterFormErrors,
+    type RegisterFormValues,
+} from '../../domain/auth/types/register';
+import {
+    normalizeBrazilianPhone,
+    validateRegisterForm,
+} from '../../domain/auth/validation/registerValidation';
+import { registerWithEmail } from '../../lib/supabase/registerService';
 
 const RegisterPage: React.FC = () => {
     const navigate = useNavigate();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
+    const [formValues, setFormValues] = useState<RegisterFormValues>(REGISTER_FORM_INITIAL_VALUES);
+    const [fieldErrors, setFieldErrors] = useState<RegisterFormErrors>({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+    const [requiresEmailConfirmation, setRequiresEmailConfirmation] = useState(true);
+
+    const isSubmitDisabled = useMemo(() => loading || success, [loading, success]);
+
+    const handleTextChange = (field: Exclude<RegisterFieldName, 'acceptLgpd'>) => (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const nextValue = event.target.value;
+        setFormValues((prev) => ({ ...prev, [field]: nextValue }));
+
+        if (fieldErrors[field]) {
+            setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+        }
+    };
+
+    const handlePhoneBlur = () => {
+        const normalized = normalizeBrazilianPhone(formValues.phone);
+        if (normalized) {
+            setFormValues((prev) => ({ ...prev, phone: normalized }));
+        }
+    };
+
+    const handleLgpdChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const checked = event.target.checked;
+        setFormValues((prev) => ({ ...prev, acceptLgpd: checked }));
+
+        if (fieldErrors.acceptLgpd) {
+            setFieldErrors((prev) => ({ ...prev, acceptLgpd: undefined }));
+        }
+    };
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (loading) {
+            return;
+        }
+
+        const { errors, sanitized } = validateRegisterForm(formValues);
+        setFieldErrors(errors);
+
+        if (!sanitized) {
+            return;
+        }
+
         setLoading(true);
         setError(null);
 
-        if (password !== confirmPassword) {
-            setError('As senhas não coincidem');
+        const result = await registerWithEmail(sanitized);
+
+        if (!result.success) {
+            setError(result.message ?? 'Nao foi possivel concluir o cadastro.');
             setLoading(false);
             return;
         }
 
-        const { error: signUpError } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                emailRedirectTo: window.location.origin + '/login',
-            },
-        });
-
-        if (signUpError) {
-            setError(signUpError.message);
-            setLoading(false);
-            return;
-        }
-
+        setRequiresEmailConfirmation(Boolean(result.requiresEmailConfirmation));
         setSuccess(true);
         setLoading(false);
     };
@@ -59,7 +102,9 @@ const RegisterPage: React.FC = () => {
                         Cadastro realizado!
                     </Typography>
                     <Alert severity="success" sx={{ mb: 3 }}>
-                        Verifique seu e-mail para confirmar seu cadastro.
+                        {requiresEmailConfirmation
+                            ? 'Verifique seu e-mail para confirmar seu cadastro.'
+                            : 'Sua conta foi criada com sucesso.'}
                     </Alert>
                     <Button
                         fullWidth
@@ -82,7 +127,7 @@ const RegisterPage: React.FC = () => {
                     Criar Conta
                 </Typography>
                 <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
-                    Registre-se para começar a focar
+                    Preencha os dados para criar sua conta e sincronizar seu progresso
                 </Typography>
 
                 {error && (
@@ -92,49 +137,137 @@ const RegisterPage: React.FC = () => {
                 )}
 
                 <Box component="form" onSubmit={handleRegister} noValidate>
-                    <TextField
-                        margin="normal"
-                        required
-                        fullWidth
-                        id="email"
-                        label="E-mail"
-                        name="email"
-                        autoComplete="email"
-                        autoFocus
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        disabled={loading}
-                    />
-                    <TextField
-                        margin="normal"
-                        required
-                        fullWidth
-                        name="password"
-                        label="Senha"
-                        type="password"
-                        id="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        disabled={loading}
-                    />
-                    <TextField
-                        margin="normal"
-                        required
-                        fullWidth
-                        name="confirmPassword"
-                        label="Confirmar Senha"
-                        type="password"
-                        id="confirmPassword"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        disabled={loading}
-                    />
+                    <Stack spacing={1.5}>
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="fullName"
+                            label="Nome completo"
+                            name="fullName"
+                            autoComplete="name"
+                            autoFocus
+                            placeholder="Ex.: Maria da Silva"
+                            value={formValues.fullName}
+                            onChange={handleTextChange('fullName')}
+                            error={Boolean(fieldErrors.fullName)}
+                            helperText={fieldErrors.fullName}
+                            disabled={isSubmitDisabled}
+                            aria-invalid={Boolean(fieldErrors.fullName)}
+                        />
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="birthDate"
+                            label="Data de nascimento"
+                            name="birthDate"
+                            type="date"
+                            value={formValues.birthDate}
+                            onChange={handleTextChange('birthDate')}
+                            error={Boolean(fieldErrors.birthDate)}
+                            helperText={fieldErrors.birthDate}
+                            disabled={isSubmitDisabled}
+                            aria-invalid={Boolean(fieldErrors.birthDate)}
+                            InputLabelProps={{ shrink: true }}
+                        />
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="email"
+                            label="E-mail"
+                            name="email"
+                            type="email"
+                            autoComplete="email"
+                            placeholder="voce@exemplo.com"
+                            value={formValues.email}
+                            onChange={handleTextChange('email')}
+                            error={Boolean(fieldErrors.email)}
+                            helperText={fieldErrors.email}
+                            disabled={isSubmitDisabled}
+                            aria-invalid={Boolean(fieldErrors.email)}
+                        />
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="phone"
+                            label="Celular"
+                            name="phone"
+                            autoComplete="tel"
+                            placeholder="(11) 99999-9999"
+                            value={formValues.phone}
+                            onChange={handleTextChange('phone')}
+                            onBlur={handlePhoneBlur}
+                            error={Boolean(fieldErrors.phone)}
+                            helperText={fieldErrors.phone ?? 'Aceita 10 ou 11 digitos com DDD. Ex.: +5511999999999'}
+                            disabled={isSubmitDisabled}
+                            aria-invalid={Boolean(fieldErrors.phone)}
+                        />
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            name="password"
+                            label="Senha"
+                            type="password"
+                            id="password"
+                            autoComplete="new-password"
+                            placeholder="Minimo de 8 caracteres, com letra e numero"
+                            value={formValues.password}
+                            onChange={handleTextChange('password')}
+                            error={Boolean(fieldErrors.password)}
+                            helperText={fieldErrors.password}
+                            disabled={isSubmitDisabled}
+                            aria-invalid={Boolean(fieldErrors.password)}
+                        />
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            name="confirmPassword"
+                            label="Confirmar senha"
+                            type="password"
+                            id="confirmPassword"
+                            autoComplete="new-password"
+                            value={formValues.confirmPassword}
+                            onChange={handleTextChange('confirmPassword')}
+                            error={Boolean(fieldErrors.confirmPassword)}
+                            helperText={fieldErrors.confirmPassword}
+                            disabled={isSubmitDisabled}
+                            aria-invalid={Boolean(fieldErrors.confirmPassword)}
+                        />
+
+                        <Box>
+                            <FormControlLabel
+                                control={(
+                                    <Checkbox
+                                        id="acceptLgpd"
+                                        name="acceptLgpd"
+                                        checked={formValues.acceptLgpd}
+                                        onChange={handleLgpdChange}
+                                        disabled={isSubmitDisabled}
+                                        inputProps={{
+                                            'aria-invalid': Boolean(fieldErrors.acceptLgpd),
+                                        }}
+                                    />
+                                )}
+                                label="Li e aceito a politica de privacidade e o tratamento de dados conforme LGPD."
+                            />
+                            {fieldErrors.acceptLgpd && (
+                                <FormHelperText error>
+                                    {fieldErrors.acceptLgpd}
+                                </FormHelperText>
+                            )}
+                        </Box>
+                    </Stack>
                     <Button
                         type="submit"
                         fullWidth
                         variant="contained"
                         size="large"
-                        disabled={loading}
+                        disabled={isSubmitDisabled}
                         sx={{ mt: 3, mb: 2, borderRadius: '999px', py: 1.5 }}
                     >
                         {loading ? <CircularProgress size={24} color="inherit" /> : 'Registrar'}

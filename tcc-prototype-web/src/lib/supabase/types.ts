@@ -7,6 +7,50 @@ export type Json = string | number | boolean | null | { [key: string]: Json } | 
 export type Database = {
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          id: string
+          fullName: string
+          birthDate: string
+          email: string
+          phone: string
+          lgpdConsentAccepted: boolean
+          lgpdConsentAt: string
+          createdAt: string
+          updatedAt: string
+        }
+        Insert: {
+          id: string
+          fullName: string
+          birthDate: string
+          email: string
+          phone: string
+          lgpdConsentAccepted?: boolean
+          lgpdConsentAt: string
+          createdAt?: string
+          updatedAt?: string
+        }
+        Update: {
+          id?: string
+          fullName?: string
+          birthDate?: string
+          email?: string
+          phone?: string
+          lgpdConsentAccepted?: boolean
+          lgpdConsentAt?: string
+          createdAt?: string
+          updatedAt?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       pomodoros: {
         Row: {
           pomodoroId: string
@@ -75,4 +119,7 @@ export type { Database as DB };
 export type PomodoroRow = Database['public']['Tables']['pomodoros']['Row'];
 export type PomodoroInsert = Database['public']['Tables']['pomodoros']['Insert'];
 export type PomodoroUpdate = Database['public']['Tables']['pomodoros']['Update'];
+export type ProfileRow = Database['public']['Tables']['profiles']['Row'];
+export type ProfileInsert = Database['public']['Tables']['profiles']['Insert'];
+export type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
 
