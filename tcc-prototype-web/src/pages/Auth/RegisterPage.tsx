@@ -37,6 +37,10 @@ const RegisterPage: React.FC = () => {
     const [requiresEmailConfirmation, setRequiresEmailConfirmation] = useState(true);
 
     const isSubmitDisabled = useMemo(() => loading || success, [loading, success]);
+    const canSubmit = useMemo(
+        () => !loading && !success && formValues.acceptLgpd,
+        [formValues.acceptLgpd, loading, success]
+    );
 
     const handleTextChange = (field: Exclude<RegisterFieldName, 'acceptLgpd'>) => (
         event: React.ChangeEvent<HTMLInputElement>
@@ -253,7 +257,20 @@ const RegisterPage: React.FC = () => {
                                         }}
                                     />
                                 )}
-                                label="Li e aceito a politica de privacidade e o tratamento de dados conforme LGPD."
+                                label={(
+                                    <Typography variant="body2" component="span">
+                                        Li e aceito a{' '}
+                                        <Link
+                                            href="/politica-privacidade.html"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            underline="hover"
+                                        >
+                                            política de privacidade
+                                        </Link>{' '}
+                                        e o tratamento de dados conforme LGPD.
+                                    </Typography>
+                                )}
                             />
                             {fieldErrors.acceptLgpd && (
                                 <FormHelperText error>
@@ -267,7 +284,7 @@ const RegisterPage: React.FC = () => {
                         fullWidth
                         variant="contained"
                         size="large"
-                        disabled={isSubmitDisabled}
+                        disabled={!canSubmit}
                         sx={{ mt: 3, mb: 2, borderRadius: '999px', py: 1.5 }}
                     >
                         {loading ? <CircularProgress size={24} color="inherit" /> : 'Registrar'}
