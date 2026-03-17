@@ -103,7 +103,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      resolve_login_email_by_phone: {
+        Args: {
+          p_phone: string
+        }
+        Returns: string | null
+      }
     }
     Enums: {
       [_ in never]: never

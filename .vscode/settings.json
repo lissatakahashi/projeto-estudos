@@ -2,5 +2,11 @@
     "liveServer.settings.port": 5501,
     "css.validate": false,
     "scss.validate": false,
-    "less.validate": false
+    "less.validate": false,
+    "mssql.intelliSense.enableIntelliSense": false,
+    "mssql.intelliSense.enableErrorChecking": false,
+    "mssql.autoDisableNonTSqlLanguageService": true,
+    "files.associations": {
+        "**/tcc-prototype-web/supabase/sql/**/*.sql": "plaintext"
+    }
 }

@@ -11,27 +11,55 @@ import {
 } from '@mui/material';
 import React, { useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import supabase from '../../lib/supabase/client';
+import {
+    LOGIN_FORM_INITIAL_VALUES,
+    type LoginFieldName,
+    type LoginFormErrors,
+    type LoginFormValues,
+} from '../../domain/auth/types/login';
+import { validateLoginForm } from '../../domain/auth/validation/loginValidation';
+import { loginWithIdentifier } from '../../lib/supabase/loginService';
 
 const LoginPage: React.FC = () => {
     const navigate = useNavigate();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [formValues, setFormValues] = useState<LoginFormValues>(LOGIN_FORM_INITIAL_VALUES);
+    const [fieldErrors, setFieldErrors] = useState<LoginFormErrors>({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    const handleFieldChange = (field: LoginFieldName) => (event: React.ChangeEvent<HTMLInputElement>) => {
+        const nextValue = event.target.value;
+        setFormValues((prev) => ({ ...prev, [field]: nextValue }));
+
+        if (fieldErrors[field]) {
+            setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+        }
+    };
+
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (loading) {
+            return;
+        }
+
+        const { errors, sanitized } = validateLoginForm(formValues);
+        setFieldErrors(errors);
+
+        if (!sanitized) {
+            return;
+        }
+
         setLoading(true);
         setError(null);
 
-        const { error: loginError } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        });
+        const result = await loginWithIdentifier(sanitized);
 
-        if (loginError) {
-            setError(loginError.message);
+        if (!result.success) {
+            if (result.field === 'identifier' || result.field === 'password') {
+                setFieldErrors((prev) => ({ ...prev, [result.field]: result.message }));
+            }
+
+            setError(result.message);
             setLoading(false);
             return;
         }
@@ -60,13 +88,17 @@ const LoginPage: React.FC = () => {
                         margin="normal"
                         required
                         fullWidth
-                        id="email"
-                        label="E-mail"
-                        name="email"
-                        autoComplete="email"
+                        id="identifier"
+                        label="E-mail ou celular"
+                        name="identifier"
+                        autoComplete="username"
                         autoFocus
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="voce@exemplo.com ou (11) 99999-9999"
+                        value={formValues.identifier}
+                        onChange={handleFieldChange('identifier')}
+                        error={Boolean(fieldErrors.identifier)}
+                        helperText={fieldErrors.identifier ?? 'Use seu e-mail ou celular com DDD.'}
+                        aria-invalid={Boolean(fieldErrors.identifier)}
                         disabled={loading}
                     />
                     <TextField
@@ -78,8 +110,11 @@ const LoginPage: React.FC = () => {
                         type="password"
                         id="password"
                         autoComplete="current-password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        value={formValues.password}
+                        onChange={handleFieldChange('password')}
+                        error={Boolean(fieldErrors.password)}
+                        helperText={fieldErrors.password}
+                        aria-invalid={Boolean(fieldErrors.password)}
                         disabled={loading}
                     />
                     <Button

@@ -4,34 +4,13 @@ import type {
     RegisterValidationResult,
     ValidRegisterPayload,
 } from '../types/register';
+import { normalizeBrazilianPhone, normalizeEmail } from './identifier';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_PATTERN = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 
 function normalizeFullName(fullName: string): string {
   return fullName.trim().replace(/\s+/g, ' ');
-}
-
-function normalizeEmail(email: string): string {
-  return email.trim().toLowerCase();
-}
-
-export function normalizeBrazilianPhone(phone: string): string | null {
-  const digitsOnly = phone.replace(/\D/g, '');
-
-  if (!digitsOnly) {
-    return null;
-  }
-
-  const localDigits = digitsOnly.startsWith('55') && (digitsOnly.length === 12 || digitsOnly.length === 13)
-    ? digitsOnly.slice(2)
-    : digitsOnly;
-
-  if (localDigits.length !== 10 && localDigits.length !== 11) {
-    return null;
-  }
-
-  return `+55${localDigits}`;
 }
 
 function isValidBirthDate(value: string): boolean {
@@ -135,3 +114,6 @@ export function validateRegisterForm(values: RegisterFormValues): RegisterValida
 
   return { errors: {}, sanitized };
 }
+
+export { normalizeBrazilianPhone } from './identifier';
+
