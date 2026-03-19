@@ -1,4 +1,30 @@
-import React, { useEffect, useRef } from 'react';
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
+import React, { useEffect, useRef, useState } from 'react';
+import { DEFAULT_POMODORO_SETTINGS } from '../../domain/pomodoro/constants/pomodoroSettings';
+import type {
+  PomodoroSettingsDraft,
+  PomodoroSettingsErrors,
+} from '../../domain/pomodoro/types/PomodoroSettings';
+import { settingsToDraft } from '../../domain/pomodoro/types/PomodoroSettings';
+import {
+  normalizeSettingsDraftValue,
+  validatePomodoroSettingsDraft,
+} from '../../domain/pomodoro/validation/pomodoroSettingsValidation';
 import { usePomodoroStore } from '../../state/usePomodoroStore';
 
 function formatTime(seconds: number) {
@@ -13,6 +39,13 @@ function formatTime(seconds: number) {
 
 const PomodoroPage: React.FC = () => {
   const pomodoro = usePomodoroStore((s) => s.pomodoro);
+  const settings = usePomodoroStore((s) => s.settings);
+  const settingsLoading = usePomodoroStore((s) => s.settingsLoading);
+  const settingsSaving = usePomodoroStore((s) => s.settingsSaving);
+  const settingsError = usePomodoroStore((s) => s.settingsError);
+  const settingsSuccessMessage = usePomodoroStore((s) => s.settingsSuccessMessage);
+  const startError = usePomodoroStore((s) => s.startError);
+  const nextMode = usePomodoroStore((s) => s.nextMode);
   const start = usePomodoroStore((s) => s.startPomodoro);
   const pause = usePomodoroStore((s) => s.pausePomodoro);
   const resume = usePomodoroStore((s) => s.resumePomodoro);
@@ -20,11 +53,22 @@ const PomodoroPage: React.FC = () => {
   const complete = usePomodoroStore((s) => s.completePomodoro);
   const penalize = usePomodoroStore((s) => s.penalizeLostFocus);
   const load = usePomodoroStore((s) => s.loadFromStorage);
+  const loadSettings = usePomodoroStore((s) => s.loadSettings);
+  const saveSettings = usePomodoroStore((s) => s.saveSettings);
+  const clearSettingsFeedback = usePomodoroStore((s) => s.clearSettingsFeedback);
+  const clearStartError = usePomodoroStore((s) => s.clearStartError);
+  const clearExpiredSession = usePomodoroStore((s) => s.clearExpiredSession);
+
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [draft, setDraft] = useState<PomodoroSettingsDraft>(settingsToDraft(DEFAULT_POMODORO_SETTINGS));
+  const [fieldErrors, setFieldErrors] = useState<PomodoroSettingsErrors>({});
 
   const hiddenAtRef = useRef<number | null>(null);
 
   useEffect(() => {
     load();
+    clearExpiredSession();
+    void loadSettings();
     // visibility handlers to detect lost focus duration
     const onVisibility = () => {
       if (document.hidden) {
@@ -40,7 +84,7 @@ const PomodoroPage: React.FC = () => {
     };
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
-  }, [load, penalize]);
+  }, [clearExpiredSession, load, loadSettings, penalize]);
 
   useEffect(() => {
     let timer: number | undefined;
@@ -54,56 +98,244 @@ const PomodoroPage: React.FC = () => {
     };
   }, [pomodoro, tick]);
 
-  const handleStart = () => start({ duration: 25 * 60, mode: 'focus' });
+  useEffect(() => {
+    if (!settingsOpen) {
+      setDraft(settingsToDraft(settings));
+      setFieldErrors({});
+    }
+  }, [settings, settingsOpen]);
+
+  const handleStart = async () => {
+    await start();
+  };
+
+  const handleOpenSettings = () => {
+    clearSettingsFeedback();
+    setFieldErrors({});
+    setDraft(settingsToDraft(settings));
+    setSettingsOpen(true);
+  };
+
+  const handleCloseSettings = () => {
+    setSettingsOpen(false);
+    setFieldErrors({});
+    setDraft(settingsToDraft(settings));
+  };
+
+  const handleDraftChange = (field: keyof PomodoroSettingsDraft) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const normalizedValue = normalizeSettingsDraftValue(event.target.value);
+    setDraft((prev) => ({ ...prev, [field]: normalizedValue }));
+    if (fieldErrors[field]) {
+      setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    const validation = validatePomodoroSettingsDraft(draft);
+    setFieldErrors(validation.errors);
+
+    if (!validation.isValid || !validation.normalized) {
+      return;
+    }
+
+    const saved = await saveSettings(validation.normalized);
+    if (saved) {
+      setSettingsOpen(false);
+    }
+  };
+
+  const modeLabel = pomodoro ? pomodoro.mode : nextMode;
+  const idlePreviewSeconds =
+    nextMode === 'short_break'
+      ? settings.shortBreakDurationMinutes * 60
+      : nextMode === 'long_break'
+        ? settings.longBreakDurationMinutes * 60
+        : settings.focusDurationMinutes * 60;
+  const plannedFocusLabel = `${settings.focusDurationMinutes} min`;
+  const plannedShortBreakLabel = `${settings.shortBreakDurationMinutes} min`;
+  const plannedLongBreakLabel = `${settings.longBreakDurationMinutes} min`;
 
   return (
-    <main>
-      <h1>Pomodoro</h1>
-      <section aria-live="polite">
-        <div style={{ fontSize: 48, fontWeight: 700 }}>
-          {pomodoro ? formatTime(pomodoro.remaining) : formatTime(25 * 60)}
-        </div>
-        <div>{pomodoro ? pomodoro.mode.replace('_', ' ') : 'Foco'}</div>
-        <div>
-          {pomodoro ? (
-            pomodoro.isValid ? (
-              <span>Sessão válida</span>
-            ) : (
-              <span>Sessão inválida: {pomodoro.invalidReason}</span>
-            )
-          ) : (
-            <span>Sem sessão ativa</span>
-          )}
-        </div>
-      </section>
+    <Container maxWidth="md" sx={{ mt: 4, mb: 6 }}>
+      <Paper sx={{ p: { xs: 3, sm: 4 }, borderRadius: 3 }} elevation={2}>
+        <Stack spacing={3}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2, flexWrap: 'wrap' }}>
+            <Box>
+              <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
+                Pomodoro
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                Configure seu ciclo de foco e pausas para manter consistência acadêmica no método.
+              </Typography>
+            </Box>
+            <Button variant="outlined" onClick={handleOpenSettings} aria-label="Abrir configuracao do Pomodoro">
+              Configurar sessão
+            </Button>
+          </Box>
 
-      <div style={{ marginTop: 16 }}>
-        {!pomodoro && (
-          <button onClick={handleStart} aria-label="Iniciar Pomodoro">
-            Iniciar
-          </button>
-        )}
-        {pomodoro && pomodoro.status === 'running' && (
-          <>
-            <button onClick={pause} aria-label="Pausar Pomodoro">Pausar</button>
-            <button onClick={complete} aria-label="Encerrar Pomodoro">Encerrar</button>
-          </>
-        )}
-        {pomodoro && pomodoro.status === 'paused' && (
-          <>
-            <button onClick={resume} aria-label="Retomar Pomodoro">Retomar</button>
-            <button onClick={complete} aria-label="Encerrar Pomodoro">Encerrar</button>
-          </>
-        )}
-      </div>
+          {settingsError && <Alert severity="warning">{settingsError}</Alert>}
+          {settingsSuccessMessage && <Alert severity="success">{settingsSuccessMessage}</Alert>}
+          {startError && <Alert severity="error" onClose={clearStartError}>{startError}</Alert>}
 
-      <div style={{ marginTop: 12 }} aria-live="polite">
-        <small>
-          Dicas: use teclado para navegar. Sair da aba por mais de alguns segundos pode
-          invalidar a sessão.
-        </small>
-      </div>
-    </main>
+          <Box aria-live="polite">
+            <Typography
+              variant="h2"
+              sx={{
+                fontWeight: 700,
+                letterSpacing: 1,
+                fontSize: { xs: '4rem', sm: '5.5rem', md: '6rem' },
+                lineHeight: 1,
+              }}
+            >
+              {pomodoro ? formatTime(pomodoro.remaining) : formatTime(idlePreviewSeconds)}
+            </Typography>
+            <Stack direction="row" spacing={1.5} sx={{ mt: 1, flexWrap: 'wrap' }}>
+              <Chip label={`Modo atual: ${modeLabel.replace('_', ' ')}`} color="primary" variant="outlined" />
+              <Chip label={`Próximo modo: ${nextMode.replace('_', ' ')}`} variant="outlined" />
+              <Chip label={`Ciclo: ${settings.cyclesBeforeLongBreak} focos por pausa longa`} variant="outlined" />
+            </Stack>
+          </Box>
+
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <Chip label={`Foco: ${plannedFocusLabel}`} />
+            <Chip label={`Pausa curta: ${plannedShortBreakLabel}`} />
+            <Chip label={`Pausa longa: ${plannedLongBreakLabel}`} />
+          </Stack>
+
+          <Box>
+            {!pomodoro && (
+              <Button onClick={handleStart} variant="contained" size="large" aria-label="Iniciar sessao Pomodoro">
+                Iniciar sessão
+              </Button>
+            )}
+            {pomodoro && pomodoro.status === 'running' && (
+              <Stack direction="row" spacing={1.5}>
+                <Button onClick={pause} variant="outlined" aria-label="Pausar sessao Pomodoro">Pausar</Button>
+                <Button
+                  onClick={() => {
+                    void complete({ resetToFocus: true });
+                  }}
+                  variant="contained"
+                  color="secondary"
+                  aria-label="Encerrar sessao Pomodoro"
+                >
+                  Encerrar
+                </Button>
+              </Stack>
+            )}
+            {pomodoro && pomodoro.status === 'paused' && (
+              <Stack direction="row" spacing={1.5}>
+                <Button onClick={resume} variant="contained" aria-label="Retomar sessao Pomodoro">Retomar</Button>
+                <Button
+                  onClick={() => {
+                    void complete({ resetToFocus: true });
+                  }}
+                  variant="outlined"
+                  color="secondary"
+                  aria-label="Finalizar sessao Pomodoro"
+                >
+                  Finalizar
+                </Button>
+              </Stack>
+            )}
+          </Box>
+
+          <Typography variant="body2" color="text.secondary" aria-live="polite">
+            {pomodoro
+              ? pomodoro.isValid
+                ? 'Sessao valida em andamento.'
+                : `Sessao invalida: ${pomodoro.invalidReason ?? 'motivo nao informado'}`
+              : 'Sem sessão ativa no momento.'}
+          </Typography>
+
+          <Typography variant="caption" color="text.secondary">
+            Se você sair da aba por tempo prolongado, a sessão pode ser invalidada para preservar consistência do progresso.
+          </Typography>
+        </Stack>
+      </Paper>
+
+      <Dialog
+        open={settingsOpen}
+        onClose={handleCloseSettings}
+        fullWidth
+        maxWidth="sm"
+        aria-labelledby="pomodoro-settings-title"
+      >
+        <DialogTitle id="pomodoro-settings-title">Configuração da sessão Pomodoro</DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              Ajuste os parâmetros da sessão. As alterações aplicam imediatamente para novas sessões.
+            </Typography>
+
+            <TextField
+              label="Duração do foco (minutos)"
+              value={draft.focusDurationMinutes}
+              onChange={handleDraftChange('focusDurationMinutes')}
+              type="text"
+              inputMode="numeric"
+              helperText={fieldErrors.focusDurationMinutes ?? 'Valor recomendado entre 5 e 120 minutos.'}
+              error={Boolean(fieldErrors.focusDurationMinutes)}
+              aria-invalid={Boolean(fieldErrors.focusDurationMinutes)}
+              fullWidth
+            />
+
+            <TextField
+              label="Duração da pausa curta (minutos)"
+              value={draft.shortBreakDurationMinutes}
+              onChange={handleDraftChange('shortBreakDurationMinutes')}
+              type="text"
+              inputMode="numeric"
+              helperText={fieldErrors.shortBreakDurationMinutes ?? 'Valor recomendado entre 1 e 30 minutos.'}
+              error={Boolean(fieldErrors.shortBreakDurationMinutes)}
+              aria-invalid={Boolean(fieldErrors.shortBreakDurationMinutes)}
+              fullWidth
+            />
+
+            <TextField
+              label="Duração da pausa longa (minutos)"
+              value={draft.longBreakDurationMinutes}
+              onChange={handleDraftChange('longBreakDurationMinutes')}
+              type="text"
+              inputMode="numeric"
+              helperText={fieldErrors.longBreakDurationMinutes ?? 'Valor recomendado entre 5 e 60 minutos e maior ou igual a pausa curta.'}
+              error={Boolean(fieldErrors.longBreakDurationMinutes)}
+              aria-invalid={Boolean(fieldErrors.longBreakDurationMinutes)}
+              fullWidth
+            />
+
+            <TextField
+              label="Ciclos de foco antes da pausa longa"
+              value={draft.cyclesBeforeLongBreak}
+              onChange={handleDraftChange('cyclesBeforeLongBreak')}
+              type="text"
+              inputMode="numeric"
+              helperText={fieldErrors.cyclesBeforeLongBreak ?? 'Valor recomendado entre 1 e 12 ciclos.'}
+              error={Boolean(fieldErrors.cyclesBeforeLongBreak)}
+              aria-invalid={Boolean(fieldErrors.cyclesBeforeLongBreak)}
+              fullWidth
+            />
+
+            {pomodoro && pomodoro.status !== 'finished' && (
+              <Alert severity="info">
+                Existe uma sessao ativa. A nova configuracao sera usada apenas nas proximas sessoes.
+              </Alert>
+            )}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseSettings} disabled={settingsSaving}>Cancelar</Button>
+          <Button
+            onClick={handleSaveSettings}
+            variant="contained"
+            disabled={settingsSaving || settingsLoading}
+            aria-label="Salvar configuracao Pomodoro"
+          >
+            {settingsSaving ? <CircularProgress size={20} color="inherit" /> : 'Salvar preferências'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
   );
 };
 

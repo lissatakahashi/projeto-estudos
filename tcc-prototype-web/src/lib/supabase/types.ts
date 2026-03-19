@@ -98,6 +98,44 @@ export type Database = {
           }
         ]
       }
+      userPomodoroSettings: {
+        Row: {
+          userId: string
+          focusDurationMinutes: number
+          shortBreakDurationMinutes: number
+          longBreakDurationMinutes: number
+          cyclesBeforeLongBreak: number
+          createdAt: string
+          updatedAt: string
+        }
+        Insert: {
+          userId: string
+          focusDurationMinutes?: number
+          shortBreakDurationMinutes?: number
+          longBreakDurationMinutes?: number
+          cyclesBeforeLongBreak?: number
+          createdAt?: string
+          updatedAt?: string
+        }
+        Update: {
+          userId?: string
+          focusDurationMinutes?: number
+          shortBreakDurationMinutes?: number
+          longBreakDurationMinutes?: number
+          cyclesBeforeLongBreak?: number
+          createdAt?: string
+          updatedAt?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "userPomodoroSettings_userId_fkey"
+            columns: ["userId"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -124,6 +162,9 @@ export type { Database as DB };
 export type PomodoroRow = Database['public']['Tables']['pomodoros']['Row'];
 export type PomodoroInsert = Database['public']['Tables']['pomodoros']['Insert'];
 export type PomodoroUpdate = Database['public']['Tables']['pomodoros']['Update'];
+export type UserPomodoroSettingsRow = Database['public']['Tables']['userPomodoroSettings']['Row'];
+export type UserPomodoroSettingsInsert = Database['public']['Tables']['userPomodoroSettings']['Insert'];
+export type UserPomodoroSettingsUpdate = Database['public']['Tables']['userPomodoroSettings']['Update'];
 export type ProfileRow = Database['public']['Tables']['profiles']['Row'];
 export type ProfileInsert = Database['public']['Tables']['profiles']['Insert'];
 export type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
