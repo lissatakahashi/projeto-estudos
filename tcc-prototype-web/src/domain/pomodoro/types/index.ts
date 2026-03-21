@@ -9,6 +9,7 @@
 export * from './enums/PomodoroMode';
 export * from './enums/PomodoroStatus';
 export * from './Pomodoro';
+export * from './PomodoroCycle';
 export * from './PomodoroHistoryItem';
 export * from './PomodoroSettings';
 

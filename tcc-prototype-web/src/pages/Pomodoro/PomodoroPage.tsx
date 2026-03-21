@@ -39,18 +39,19 @@ function formatTime(seconds: number) {
 
 const PomodoroPage: React.FC = () => {
   const pomodoro = usePomodoroStore((s) => s.pomodoro);
+  const cycleState = usePomodoroStore((s) => s.cycleState);
   const settings = usePomodoroStore((s) => s.settings);
   const settingsLoading = usePomodoroStore((s) => s.settingsLoading);
   const settingsSaving = usePomodoroStore((s) => s.settingsSaving);
   const settingsError = usePomodoroStore((s) => s.settingsError);
   const settingsSuccessMessage = usePomodoroStore((s) => s.settingsSuccessMessage);
   const startError = usePomodoroStore((s) => s.startError);
-  const nextMode = usePomodoroStore((s) => s.nextMode);
   const start = usePomodoroStore((s) => s.startPomodoro);
   const pause = usePomodoroStore((s) => s.pausePomodoro);
   const resume = usePomodoroStore((s) => s.resumePomodoro);
   const tick = usePomodoroStore((s) => s.tickPomodoro);
-  const complete = usePomodoroStore((s) => s.completePomodoro);
+  const reset = usePomodoroStore((s) => s.resetPomodoro);
+  const advanceToNextPhase = usePomodoroStore((s) => s.advanceToNextPhase);
   const penalize = usePomodoroStore((s) => s.penalizeLostFocus);
   const load = usePomodoroStore((s) => s.loadFromStorage);
   const loadSettings = usePomodoroStore((s) => s.loadSettings);
@@ -109,6 +110,14 @@ const PomodoroPage: React.FC = () => {
     await start();
   };
 
+  const handleReset = async () => {
+    await reset();
+  };
+
+  const handleAdvancePhase = async () => {
+    await advanceToNextPhase();
+  };
+
   const handleOpenSettings = () => {
     clearSettingsFeedback();
     setFieldErrors({});
@@ -144,16 +153,12 @@ const PomodoroPage: React.FC = () => {
     }
   };
 
-  const modeLabel = pomodoro ? pomodoro.mode : nextMode;
-  const idlePreviewSeconds =
-    nextMode === 'short_break'
-      ? settings.shortBreakDurationMinutes * 60
-      : nextMode === 'long_break'
-        ? settings.longBreakDurationMinutes * 60
-        : settings.focusDurationMinutes * 60;
+  const modeLabel = cycleState.phase === 'paused' ? `paused (${cycleState.activeMode})` : cycleState.phase;
+  const displaySeconds = pomodoro ? pomodoro.remaining : cycleState.remainingSeconds;
   const plannedFocusLabel = `${settings.focusDurationMinutes} min`;
   const plannedShortBreakLabel = `${settings.shortBreakDurationMinutes} min`;
   const plannedLongBreakLabel = `${settings.longBreakDurationMinutes} min`;
+  const focusCycleProgress = `${cycleState.focusSessionsCompletedInCycle}/${settings.cyclesBeforeLongBreak}`;
 
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 6 }}>
@@ -187,12 +192,14 @@ const PomodoroPage: React.FC = () => {
                 lineHeight: 1,
               }}
             >
-              {pomodoro ? formatTime(pomodoro.remaining) : formatTime(idlePreviewSeconds)}
+              {formatTime(displaySeconds)}
             </Typography>
             <Stack direction="row" spacing={1.5} sx={{ mt: 1, flexWrap: 'wrap' }}>
               <Chip label={`Modo atual: ${modeLabel.replace('_', ' ')}`} color="primary" variant="outlined" />
-              <Chip label={`Próximo modo: ${nextMode.replace('_', ' ')}`} variant="outlined" />
+              <Chip label={`Proximo modo: ${cycleState.nextMode.replace('_', ' ')}`} variant="outlined" />
               <Chip label={`Ciclo: ${settings.cyclesBeforeLongBreak} focos por pausa longa`} variant="outlined" />
+              <Chip label={`Focos no ciclo: ${focusCycleProgress}`} variant="outlined" />
+              <Chip label={`Focos totais concluidos: ${cycleState.totalFocusSessionsCompleted}`} variant="outlined" />
             </Stack>
           </Box>
 
@@ -212,14 +219,19 @@ const PomodoroPage: React.FC = () => {
               <Stack direction="row" spacing={1.5}>
                 <Button onClick={pause} variant="outlined" aria-label="Pausar sessao Pomodoro">Pausar</Button>
                 <Button
-                  onClick={() => {
-                    void complete({ resetToFocus: true });
-                  }}
+                  onClick={handleAdvancePhase}
                   variant="contained"
-                  color="secondary"
-                  aria-label="Encerrar sessao Pomodoro"
+                  aria-label="Avancar fase Pomodoro"
                 >
-                  Encerrar
+                  Avancar fase
+                </Button>
+                <Button
+                  onClick={handleReset}
+                  variant="outlined"
+                  color="secondary"
+                  aria-label="Resetar ciclo Pomodoro"
+                >
+                  Resetar
                 </Button>
               </Stack>
             )}
@@ -227,14 +239,19 @@ const PomodoroPage: React.FC = () => {
               <Stack direction="row" spacing={1.5}>
                 <Button onClick={resume} variant="contained" aria-label="Retomar sessao Pomodoro">Retomar</Button>
                 <Button
-                  onClick={() => {
-                    void complete({ resetToFocus: true });
-                  }}
+                  onClick={handleAdvancePhase}
+                  variant="outlined"
+                  aria-label="Avancar fase Pomodoro pausada"
+                >
+                  Avancar fase
+                </Button>
+                <Button
+                  onClick={handleReset}
                   variant="outlined"
                   color="secondary"
-                  aria-label="Finalizar sessao Pomodoro"
+                  aria-label="Resetar ciclo Pomodoro"
                 >
-                  Finalizar
+                  Resetar
                 </Button>
               </Stack>
             )}
@@ -250,6 +267,10 @@ const PomodoroPage: React.FC = () => {
 
           <Typography variant="caption" color="text.secondary">
             Se você sair da aba por tempo prolongado, a sessão pode ser invalidada para preservar consistência do progresso.
+          </Typography>
+
+          <Typography variant="caption" color="text.secondary">
+            Avancar fase foi habilitado por design para testes e acessibilidade operacional, incluindo pulo de pausas quando necessario.
           </Typography>
         </Stack>
       </Paper>
