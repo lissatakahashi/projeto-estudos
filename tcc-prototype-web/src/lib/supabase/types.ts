@@ -98,6 +98,68 @@ export type Database = {
           }
         ]
       }
+      pomodoroSessions: {
+        Row: {
+          sessionId: string
+          userId: string
+          phaseType: string
+          startedAt: string
+          endedAt: string
+          plannedDurationSeconds: number
+          actualDurationSeconds: number
+          status: string
+          completedAt: string | null
+          focusSequenceIndex: number | null
+          cycleIndex: number | null
+          sourcePomodoroId: string
+          metadata: Json | null
+          createdAt: string
+          updatedAt: string
+        }
+        Insert: {
+          sessionId?: string
+          userId: string
+          phaseType: string
+          startedAt: string
+          endedAt: string
+          plannedDurationSeconds: number
+          actualDurationSeconds: number
+          status: string
+          completedAt?: string | null
+          focusSequenceIndex?: number | null
+          cycleIndex?: number | null
+          sourcePomodoroId: string
+          metadata?: Json | null
+          createdAt?: string
+          updatedAt?: string
+        }
+        Update: {
+          sessionId?: string
+          userId?: string
+          phaseType?: string
+          startedAt?: string
+          endedAt?: string
+          plannedDurationSeconds?: number
+          actualDurationSeconds?: number
+          status?: string
+          completedAt?: string | null
+          focusSequenceIndex?: number | null
+          cycleIndex?: number | null
+          sourcePomodoroId?: string
+          metadata?: Json | null
+          createdAt?: string
+          updatedAt?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pomodoroSessions_userId_fkey"
+            columns: ["userId"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       userPomodoroSettings: {
         Row: {
           userId: string
@@ -162,6 +224,9 @@ export type { Database as DB };
 export type PomodoroRow = Database['public']['Tables']['pomodoros']['Row'];
 export type PomodoroInsert = Database['public']['Tables']['pomodoros']['Insert'];
 export type PomodoroUpdate = Database['public']['Tables']['pomodoros']['Update'];
+export type PomodoroSessionRow = Database['public']['Tables']['pomodoroSessions']['Row'];
+export type PomodoroSessionInsert = Database['public']['Tables']['pomodoroSessions']['Insert'];
+export type PomodoroSessionUpdate = Database['public']['Tables']['pomodoroSessions']['Update'];
 export type UserPomodoroSettingsRow = Database['public']['Tables']['userPomodoroSettings']['Row'];
 export type UserPomodoroSettingsInsert = Database['public']['Tables']['userPomodoroSettings']['Insert'];
 export type UserPomodoroSettingsUpdate = Database['public']['Tables']['userPomodoroSettings']['Update'];

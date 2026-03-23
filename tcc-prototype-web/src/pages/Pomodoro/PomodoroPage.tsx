@@ -45,6 +45,9 @@ const PomodoroPage: React.FC = () => {
   const settingsSaving = usePomodoroStore((s) => s.settingsSaving);
   const settingsError = usePomodoroStore((s) => s.settingsError);
   const settingsSuccessMessage = usePomodoroStore((s) => s.settingsSuccessMessage);
+  const completionFeedback = usePomodoroStore((s) => s.completionFeedback);
+  const completedFocusSessionsCount = usePomodoroStore((s) => s.completedFocusSessionsCount);
+  const totalFocusStudySeconds = usePomodoroStore((s) => s.totalFocusStudySeconds);
   const startError = usePomodoroStore((s) => s.startError);
   const start = usePomodoroStore((s) => s.startPomodoro);
   const pause = usePomodoroStore((s) => s.pausePomodoro);
@@ -56,6 +59,7 @@ const PomodoroPage: React.FC = () => {
   const load = usePomodoroStore((s) => s.loadFromStorage);
   const loadSettings = usePomodoroStore((s) => s.loadSettings);
   const saveSettings = usePomodoroStore((s) => s.saveSettings);
+  const clearCompletionFeedback = usePomodoroStore((s) => s.clearCompletionFeedback);
   const clearSettingsFeedback = usePomodoroStore((s) => s.clearSettingsFeedback);
   const clearStartError = usePomodoroStore((s) => s.clearStartError);
   const clearExpiredSession = usePomodoroStore((s) => s.clearExpiredSession);
@@ -159,6 +163,7 @@ const PomodoroPage: React.FC = () => {
   const plannedShortBreakLabel = `${settings.shortBreakDurationMinutes} min`;
   const plannedLongBreakLabel = `${settings.longBreakDurationMinutes} min`;
   const focusCycleProgress = `${cycleState.focusSessionsCompletedInCycle}/${settings.cyclesBeforeLongBreak}`;
+  const studiedMinutes = Math.floor(totalFocusStudySeconds / 60);
 
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 6 }}>
@@ -180,6 +185,11 @@ const PomodoroPage: React.FC = () => {
 
           {settingsError && <Alert severity="warning">{settingsError}</Alert>}
           {settingsSuccessMessage && <Alert severity="success">{settingsSuccessMessage}</Alert>}
+          {completionFeedback && (
+            <Alert severity={completionFeedback.severity} onClose={clearCompletionFeedback}>
+              {completionFeedback.message}
+            </Alert>
+          )}
           {startError && <Alert severity="error" onClose={clearStartError}>{startError}</Alert>}
 
           <Box aria-live="polite">
@@ -199,7 +209,8 @@ const PomodoroPage: React.FC = () => {
               <Chip label={`Proximo modo: ${cycleState.nextMode.replace('_', ' ')}`} variant="outlined" />
               <Chip label={`Ciclo: ${settings.cyclesBeforeLongBreak} focos por pausa longa`} variant="outlined" />
               <Chip label={`Focos no ciclo: ${focusCycleProgress}`} variant="outlined" />
-              <Chip label={`Focos totais concluidos: ${cycleState.totalFocusSessionsCompleted}`} variant="outlined" />
+              <Chip label={`Focos concluidos validos: ${completedFocusSessionsCount}`} variant="outlined" />
+              <Chip label={`Tempo total estudado: ${studiedMinutes} min`} variant="outlined" />
             </Stack>
           </Box>
 
