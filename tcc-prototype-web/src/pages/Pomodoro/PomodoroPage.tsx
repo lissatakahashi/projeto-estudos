@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { DEFAULT_POMODORO_SETTINGS } from '../../domain/pomodoro/constants/pomodoroSettings';
+import { getPomodoroInvalidationReasonLabel } from '../../domain/pomodoro/types/PomodoroInvalidation';
 import type {
   PomodoroSettingsDraft,
   PomodoroSettingsErrors,
@@ -26,6 +27,7 @@ import {
   validatePomodoroSettingsDraft,
 } from '../../domain/pomodoro/validation/pomodoroSettingsValidation';
 import { usePomodoroStore } from '../../state/usePomodoroStore';
+import { useWalletStore } from '../../state/useWalletStore';
 
 function formatTime(seconds: number) {
   const m = Math.floor(seconds / 60)
@@ -63,6 +65,9 @@ const PomodoroPage: React.FC = () => {
   const clearSettingsFeedback = usePomodoroStore((s) => s.clearSettingsFeedback);
   const clearStartError = usePomodoroStore((s) => s.clearStartError);
   const clearExpiredSession = usePomodoroStore((s) => s.clearExpiredSession);
+  const walletBalance = useWalletStore((s) => s.balance);
+  const walletLoading = useWalletStore((s) => s.loading);
+  const walletTransactions = useWalletStore((s) => s.transactions);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [draft, setDraft] = useState<PomodoroSettingsDraft>(settingsToDraft(DEFAULT_POMODORO_SETTINGS));
@@ -87,8 +92,36 @@ const PomodoroPage: React.FC = () => {
         hiddenAtRef.current = null;
       }
     };
+
+    const onBeforeUnload = () => {
+      const state = usePomodoroStore.getState();
+      const active = state.pomodoro;
+      if (!active || active.status === 'finished' || active.mode !== 'focus') {
+        return;
+      }
+
+      void state.invalidateActivePomodoro('page_unload');
+    };
+
+    const onPageHide = () => {
+      onBeforeUnload();
+    };
+
     document.addEventListener('visibilitychange', onVisibility);
-    return () => document.removeEventListener('visibilitychange', onVisibility);
+    window.addEventListener('beforeunload', onBeforeUnload);
+    window.addEventListener('pagehide', onPageHide);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('beforeunload', onBeforeUnload);
+      window.removeEventListener('pagehide', onPageHide);
+      const state = usePomodoroStore.getState();
+      const active = state.pomodoro;
+      if (!active || active.status === 'finished' || active.mode !== 'focus') {
+        return;
+      }
+      void state.invalidateActivePomodoro('component_unmount');
+    };
   }, [clearExpiredSession, load, loadSettings, penalize]);
 
   useEffect(() => {
@@ -114,7 +147,7 @@ const PomodoroPage: React.FC = () => {
     await start();
   };
 
-  const handleReset = async () => {
+  const handleCancel = async () => {
     await reset();
   };
 
@@ -164,6 +197,7 @@ const PomodoroPage: React.FC = () => {
   const plannedLongBreakLabel = `${settings.longBreakDurationMinutes} min`;
   const focusCycleProgress = `${cycleState.focusSessionsCompletedInCycle}/${settings.cyclesBeforeLongBreak}`;
   const studiedMinutes = Math.floor(totalFocusStudySeconds / 60);
+  const latestWalletTransaction = walletTransactions[0];
 
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 6 }}>
@@ -206,11 +240,12 @@ const PomodoroPage: React.FC = () => {
             </Typography>
             <Stack direction="row" spacing={1.5} sx={{ mt: 1, flexWrap: 'wrap' }}>
               <Chip label={`Modo atual: ${modeLabel.replace('_', ' ')}`} color="primary" variant="outlined" />
-              <Chip label={`Proximo modo: ${cycleState.nextMode.replace('_', ' ')}`} variant="outlined" />
+              <Chip label={`Próximo modo: ${cycleState.nextMode.replace('_', ' ')}`} variant="outlined" />
               <Chip label={`Ciclo: ${settings.cyclesBeforeLongBreak} focos por pausa longa`} variant="outlined" />
               <Chip label={`Focos no ciclo: ${focusCycleProgress}`} variant="outlined" />
               <Chip label={`Focos concluidos validos: ${completedFocusSessionsCount}`} variant="outlined" />
               <Chip label={`Tempo total estudado: ${studiedMinutes} min`} variant="outlined" />
+              <Chip label={walletLoading ? 'Carteira: carregando...' : `Carteira: ${walletBalance} moedas`} color="success" variant="outlined" />
             </Stack>
           </Box>
 
@@ -227,42 +262,54 @@ const PomodoroPage: React.FC = () => {
               </Button>
             )}
             {pomodoro && pomodoro.status === 'running' && (
-              <Stack direction="row" spacing={1.5}>
-                <Button onClick={pause} variant="outlined" aria-label="Pausar sessao Pomodoro">Pausar</Button>
+              <Stack spacing={1.5}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+                  <Button onClick={pause} variant="outlined" aria-label="Pausar sessao Pomodoro" fullWidth>
+                    Pausar
+                  </Button>
+                  <Button
+                    onClick={handleAdvancePhase}
+                    variant="contained"
+                    aria-label="Avancar fase Pomodoro"
+                    fullWidth
+                  >
+                    Avancar fase
+                  </Button>
+                </Stack>
                 <Button
-                  onClick={handleAdvancePhase}
+                  onClick={handleCancel}
                   variant="contained"
-                  aria-label="Avancar fase Pomodoro"
+                  color="error"
+                  aria-label="Cancelar sessao Pomodoro"
+                  fullWidth
                 >
-                  Avancar fase
-                </Button>
-                <Button
-                  onClick={handleReset}
-                  variant="outlined"
-                  color="secondary"
-                  aria-label="Resetar ciclo Pomodoro"
-                >
-                  Resetar
+                  Cancelar sessão
                 </Button>
               </Stack>
             )}
             {pomodoro && pomodoro.status === 'paused' && (
-              <Stack direction="row" spacing={1.5}>
-                <Button onClick={resume} variant="contained" aria-label="Retomar sessao Pomodoro">Retomar</Button>
+              <Stack spacing={1.5}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+                  <Button onClick={resume} variant="contained" aria-label="Retomar sessao Pomodoro" fullWidth>
+                    Retomar
+                  </Button>
+                  <Button
+                    onClick={handleAdvancePhase}
+                    variant="outlined"
+                    aria-label="Avancar fase Pomodoro pausada"
+                    fullWidth
+                  >
+                    Avancar fase
+                  </Button>
+                </Stack>
                 <Button
-                  onClick={handleAdvancePhase}
-                  variant="outlined"
-                  aria-label="Avancar fase Pomodoro pausada"
+                  onClick={handleCancel}
+                  variant="contained"
+                  color="error"
+                  aria-label="Cancelar sessao Pomodoro"
+                  fullWidth
                 >
-                  Avancar fase
-                </Button>
-                <Button
-                  onClick={handleReset}
-                  variant="outlined"
-                  color="secondary"
-                  aria-label="Resetar ciclo Pomodoro"
-                >
-                  Resetar
+                  Cancelar sessão
                 </Button>
               </Stack>
             )}
@@ -272,17 +319,24 @@ const PomodoroPage: React.FC = () => {
             {pomodoro
               ? pomodoro.isValid
                 ? 'Sessao valida em andamento.'
-                : `Sessao invalida: ${pomodoro.invalidReason ?? 'motivo nao informado'}`
+                : `Sessao invalida: ${getPomodoroInvalidationReasonLabel(pomodoro.invalidReason)}`
               : 'Sem sessão ativa no momento.'}
           </Typography>
 
           <Typography variant="caption" color="text.secondary">
-            Se você sair da aba por tempo prolongado, a sessão pode ser invalidada para preservar consistência do progresso.
+            Se a sessao de foco for abandonada (cancelamento, troca de rota, recarregamento, fechamento ou aba oculta por tempo excessivo), ela e invalidada e nao conta progresso.
           </Typography>
 
           <Typography variant="caption" color="text.secondary">
             Avancar fase foi habilitado por design para testes e acessibilidade operacional, incluindo pulo de pausas quando necessario.
           </Typography>
+
+          {latestWalletTransaction && (
+            <Typography variant="caption" color="text.secondary">
+              Ultima transacao: {latestWalletTransaction.transactionType === 'credit' ? '+' : '-'}
+              {latestWalletTransaction.amount} moedas ({latestWalletTransaction.reason}).
+            </Typography>
+          )}
         </Stack>
       </Paper>
 

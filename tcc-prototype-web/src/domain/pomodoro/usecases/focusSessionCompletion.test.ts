@@ -60,6 +60,47 @@ describe('resolveFocusSessionCompletion', () => {
     expect(result.actualDurationSeconds).toBe(1200);
   });
 
+  it('marks manual cancel as invalidated and not countable', () => {
+    const result = resolveFocusSessionCompletion({
+      mode: 'focus',
+      isValid: true,
+      plannedDurationSeconds: 1500,
+      remainingSeconds: 400,
+      trigger: 'manual_cancel',
+    });
+
+    expect(result.status).toBe('invalidated');
+    expect(result.shouldPersist).toBe(true);
+    expect(result.shouldCountAsCompletedFocus).toBe(false);
+    expect(result.actualDurationSeconds).toBe(1100);
+  });
+
+  it('marks route change abandonment as invalidated', () => {
+    const result = resolveFocusSessionCompletion({
+      mode: 'focus',
+      isValid: true,
+      plannedDurationSeconds: 1500,
+      remainingSeconds: 1000,
+      trigger: 'route_change',
+    });
+
+    expect(result.status).toBe('invalidated');
+    expect(result.shouldCountAsCompletedFocus).toBe(false);
+  });
+
+  it('marks page unload abandonment as invalidated', () => {
+    const result = resolveFocusSessionCompletion({
+      mode: 'focus',
+      isValid: true,
+      plannedDurationSeconds: 1500,
+      remainingSeconds: 1490,
+      trigger: 'page_unload',
+    });
+
+    expect(result.status).toBe('invalidated');
+    expect(result.shouldPersist).toBe(true);
+  });
+
   it('does not persist non-focus phases as completed study sessions', () => {
     const result = resolveFocusSessionCompletion({
       mode: 'short_break',

@@ -70,6 +70,32 @@ describe('pomodoroSessionService', () => {
     expect(interrupted.completedAt).toBeNull();
   });
 
+  it('stores invalidated reason in metadata and keeps completedAt null', () => {
+    const invalidated = mapFocusSessionToInsert({
+      userId: 'user-1',
+      sourcePomodoroId: 'pomodoro-3',
+      phaseType: 'focus',
+      startedAt: '2026-03-22T11:00:00.000Z',
+      endedAt: '2026-03-22T11:05:00.000Z',
+      plannedDurationSeconds: 1500,
+      actualDurationSeconds: 300,
+      status: 'invalidated',
+      focusSequenceIndex: 5,
+      cycleIndex: 2,
+      trigger: 'route_change',
+      isValid: false,
+      invalidReason: 'route_change',
+    });
+
+    expect(invalidated.completedAt).toBeNull();
+    expect(invalidated.metadata).toEqual(
+      expect.objectContaining({
+        invalidReason: 'route_change',
+        isValid: false,
+      }),
+    );
+  });
+
   it('uses upsert with sourcePomodoroId conflict key to enforce idempotency', async () => {
     singleMock.mockResolvedValue({
       data: {

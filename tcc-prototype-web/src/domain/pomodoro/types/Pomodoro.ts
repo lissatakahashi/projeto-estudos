@@ -1,5 +1,6 @@
 import { PomodoroMode } from './enums/PomodoroMode';
 import { PomodoroStatus } from './enums/PomodoroStatus';
+import type { PomodoroInvalidationReason } from './PomodoroInvalidation';
 
 /**
  * PomodoroId
@@ -35,7 +36,7 @@ export type Pomodoro = {
   remaining: number; // remaining seconds
   isValid: boolean;
   lostFocusSeconds: number;
-  invalidReason?: string;
+  invalidReason?: PomodoroInvalidationReason;
   startedAt?: string; // ISO
   endedAt?: string; // ISO
 };

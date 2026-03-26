@@ -1,5 +1,5 @@
-import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import React, { useEffect, useRef } from 'react';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import AppShell from '../components/layout/AppShell';
 import AboutPage from '../pages/About/AboutPage';
 import ForgotPasswordPage from '../pages/Auth/ForgotPasswordPage';
@@ -9,9 +9,32 @@ import ResetPasswordPage from '../pages/Auth/ResetPasswordPage';
 import HomePage from '../pages/Home/HomePage';
 import MetodologiaPage from '../pages/Metodologia/MetodologiaPage';
 import PomodoroPage from '../pages/Pomodoro/PomodoroPage';
+import { usePomodoroStore } from '../state/usePomodoroStore';
+
+const PomodoroAbandonmentRouteGuard: React.FC = () => {
+  const location = useLocation();
+  const previousPathnameRef = useRef(location.pathname);
+
+  useEffect(() => {
+    const previous = previousPathnameRef.current;
+    if (previous === '/pomodoro' && location.pathname !== '/pomodoro') {
+      const state = usePomodoroStore.getState();
+      const active = state.pomodoro;
+
+      if (active && active.status !== 'finished' && active.mode === 'focus') {
+        void state.invalidateActivePomodoro('route_change');
+      }
+    }
+
+    previousPathnameRef.current = location.pathname;
+  }, [location.pathname]);
+
+  return null;
+};
 
 const Router: React.FC = () => (
   <AppShell>
+    <PomodoroAbandonmentRouteGuard />
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />

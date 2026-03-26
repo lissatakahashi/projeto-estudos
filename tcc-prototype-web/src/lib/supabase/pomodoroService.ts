@@ -1,5 +1,9 @@
-import { supabase } from './client';
 import type { Pomodoro } from '../../domain/pomodoro/types';
+import {
+    POMODORO_INVALIDATION_REASONS,
+    type PomodoroInvalidationReason,
+} from '../../domain/pomodoro/types/PomodoroInvalidation';
+import { supabase } from './client';
 import type { Database, Json } from './types';
 
 /**
@@ -20,6 +24,14 @@ interface PomodoroMetadata {
     isValid?: boolean;
     invalidReason?: string;
     lostFocusSeconds?: number;
+}
+
+function parseInvalidReason(value: string | undefined): PomodoroInvalidationReason | undefined {
+    if (!value) return undefined;
+    if (POMODORO_INVALIDATION_REASONS.includes(value as PomodoroInvalidationReason)) {
+        return value as PomodoroInvalidationReason;
+    }
+    return undefined;
 }
 
 export interface PomodoroServiceError {
@@ -177,7 +189,7 @@ export function mapRecordToPomodoro(record: PomodoroRow): Pomodoro {
         lostFocusSeconds: metadata?.lostFocusSeconds ?? 0,
         startedAt: record.startedAt ?? undefined,
         endedAt: record.endedAt ?? undefined,
-        invalidReason: metadata?.invalidReason,
+        invalidReason: parseInvalidReason(metadata?.invalidReason),
     };
 }
 

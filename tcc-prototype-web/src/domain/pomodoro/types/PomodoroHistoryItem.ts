@@ -1,4 +1,5 @@
 import { PomodoroMode } from './enums/PomodoroMode';
+import type { PomodoroInvalidationReason } from './PomodoroInvalidation';
 
 /**
  * PomodoroHistoryItemId
@@ -30,5 +31,5 @@ export type PomodoroHistoryItem = {
   duration: number; // seconds planned
   actualDuration: number; // seconds elapsed
   isValid: boolean;
-  invalidReason?: string;
+  invalidReason?: PomodoroInvalidationReason;
 };

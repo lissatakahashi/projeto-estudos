@@ -198,6 +198,82 @@ export type Database = {
           }
         ]
       }
+      wallets: {
+        Row: {
+          walletId: string
+          userId: string
+          balance: number
+          createdAt: string
+          updatedAt: string
+        }
+        Insert: {
+          walletId?: string
+          userId: string
+          balance?: number
+          createdAt?: string
+          updatedAt?: string
+        }
+        Update: {
+          walletId?: string
+          userId?: string
+          balance?: number
+          createdAt?: string
+          updatedAt?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallets_userId_fkey"
+            columns: ["userId"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      walletTransactions: {
+        Row: {
+          transactionId: string
+          userId: string
+          amount: number
+          transactionType: string
+          reason: string
+          referenceType: string
+          referenceId: string | null
+          description: string | null
+          createdAt: string
+        }
+        Insert: {
+          transactionId?: string
+          userId: string
+          amount: number
+          transactionType: string
+          reason: string
+          referenceType: string
+          referenceId?: string | null
+          description?: string | null
+          createdAt?: string
+        }
+        Update: {
+          transactionId?: string
+          userId?: string
+          amount?: number
+          transactionType?: string
+          reason?: string
+          referenceType?: string
+          referenceId?: string | null
+          description?: string | null
+          createdAt?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "walletTransactions_userId_fkey"
+            columns: ["userId"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -208,6 +284,18 @@ export type Database = {
           p_phone: string
         }
         Returns: string | null
+      }
+      award_focus_session_coins: {
+        Args: {
+          p_focus_session_id: string
+          p_planned_duration_seconds: number
+        }
+        Returns: {
+          awarded: boolean
+          awarded_amount: number
+          new_balance: number
+          transaction_id: string | null
+        }[]
       }
     }
     Enums: {
@@ -230,6 +318,12 @@ export type PomodoroSessionUpdate = Database['public']['Tables']['pomodoroSessio
 export type UserPomodoroSettingsRow = Database['public']['Tables']['userPomodoroSettings']['Row'];
 export type UserPomodoroSettingsInsert = Database['public']['Tables']['userPomodoroSettings']['Insert'];
 export type UserPomodoroSettingsUpdate = Database['public']['Tables']['userPomodoroSettings']['Update'];
+export type WalletRow = Database['public']['Tables']['wallets']['Row'];
+export type WalletInsert = Database['public']['Tables']['wallets']['Insert'];
+export type WalletUpdate = Database['public']['Tables']['wallets']['Update'];
+export type WalletTransactionRow = Database['public']['Tables']['walletTransactions']['Row'];
+export type WalletTransactionInsert = Database['public']['Tables']['walletTransactions']['Insert'];
+export type WalletTransactionUpdate = Database['public']['Tables']['walletTransactions']['Update'];
 export type ProfileRow = Database['public']['Tables']['profiles']['Row'];
 export type ProfileInsert = Database['public']['Tables']['profiles']['Insert'];
 export type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];

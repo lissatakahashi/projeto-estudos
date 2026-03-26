@@ -1,6 +1,12 @@
 import type { PomodoroMode } from '../types/enums/PomodoroMode';
+import type { PomodoroInvalidationReason } from '../types/PomodoroInvalidation';
 
-export type PomodoroCompletionTrigger = 'timer_elapsed' | 'manual_advance' | 'reset' | 'system';
+export type PomodoroCompletionTrigger =
+  | 'timer_elapsed'
+  | 'manual_advance'
+  | 'reset'
+  | 'system'
+  | PomodoroInvalidationReason;
 export type PomodoroSessionStatus = 'completed' | 'invalidated' | 'interrupted';
 
 export type ResolveFocusSessionCompletionInput = {
@@ -17,6 +23,14 @@ export type FocusSessionCompletionResolution = {
   status: PomodoroSessionStatus;
   actualDurationSeconds: number;
 };
+
+const INVALIDATING_TRIGGERS: readonly PomodoroCompletionTrigger[] = [
+  'manual_cancel',
+  'route_change',
+  'page_unload',
+  'component_unmount',
+  'tab_hidden_timeout',
+];
 
 function clampDuration(input: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, input));
@@ -39,6 +53,15 @@ export function resolveFocusSessionCompletion(
   }
 
   if (!input.isValid) {
+    return {
+      shouldPersist: true,
+      shouldCountAsCompletedFocus: false,
+      status: 'invalidated',
+      actualDurationSeconds: actual,
+    };
+  }
+
+  if (INVALIDATING_TRIGGERS.includes(input.trigger)) {
     return {
       shouldPersist: true,
       shouldCountAsCompletedFocus: false,

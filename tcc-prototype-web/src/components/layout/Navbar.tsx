@@ -1,20 +1,21 @@
-import React from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import ThemeToggle from './ThemeToggle';
+import MenuIcon from '@mui/icons-material/Menu';
 import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import Drawer from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-import MenuIcon from '@mui/icons-material/Menu';
-import { useAuthSession } from '../../lib/supabase/hooks';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import React from 'react';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import supabase from '../../lib/supabase/client';
+import { useAuthSession } from '../../lib/supabase/hooks';
+import { useWalletStore } from '../../state/useWalletStore';
+import ThemeToggle from './ThemeToggle';
 
 const navLinks = [
   { to: '/pomodoro', label: 'Pomodoro' },
@@ -27,6 +28,7 @@ const navLinks = [
 const Navbar: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const session = useAuthSession();
+  const walletBalance = useWalletStore((s) => s.balance);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -72,6 +74,9 @@ const Navbar: React.FC = () => {
 
           {session ? (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Typography variant="body2" sx={{ fontWeight: 700, color: 'success.main', display: { xs: 'none', md: 'block' } }}>
+                {walletBalance} moedas
+              </Typography>
               <Typography variant="body2" sx={{ display: { xs: 'none', lg: 'block' } }}>
                 {session.user.email}
               </Typography>
@@ -131,9 +136,14 @@ const Navbar: React.FC = () => {
             ))}
             <ListItem>
               {session ? (
-                <Button variant="outlined" color="primary" fullWidth onClick={handleLogout}>
-                  Sair ({session.user.email})
-                </Button>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: '100%' }}>
+                  <Typography variant="body2" sx={{ color: 'success.main', fontWeight: 700 }}>
+                    {walletBalance} moedas
+                  </Typography>
+                  <Button variant="outlined" color="primary" fullWidth onClick={handleLogout}>
+                    Sair ({session.user.email})
+                  </Button>
+                </Box>
               ) : (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: '100%' }}>
                   <Button component={RouterLink} to="/login" variant="outlined" color="primary" fullWidth>

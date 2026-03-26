@@ -1,6 +1,11 @@
 import create from 'zustand';
+import { awardFocusSessionCoins } from '../domain/economy/usecases/awardFocusSessionCoins';
 import { DEFAULT_POMODORO_SETTINGS } from '../domain/pomodoro/constants/pomodoroSettings';
 import { Pomodoro, PomodoroCycleState, PomodoroHistoryItem } from '../domain/pomodoro/types';
+import {
+    getPomodoroInvalidationReasonLabel,
+    type PomodoroInvalidationReason
+} from '../domain/pomodoro/types/PomodoroInvalidation';
 import type { PomodoroSettings } from '../domain/pomodoro/types/PomodoroSettings';
 import type { PomodoroCompletionTrigger } from '../domain/pomodoro/usecases/focusSessionCompletion';
 import { resolveFocusSessionCompletion } from '../domain/pomodoro/usecases/focusSessionCompletion';
@@ -22,17 +27,21 @@ import {
     updatePomodoro as updatePomodoroSupabase,
 } from '../lib/supabase/pomodoroService';
 import {
+    registerFocusSession,
+} from '../lib/supabase/pomodoroSessionService';
+import {
     getUserPomodoroSettings,
     loadPomodoroSettingsFromLocalStorage,
     savePomodoroSettingsToLocalStorage,
     upsertUserPomodoroSettings,
 } from '../lib/supabase/pomodoroSettingsService';
+import { awardFocusSessionReward } from '../lib/supabase/walletService';
+import { useWalletStore } from './useWalletStore';
 
 import { supabase } from '../lib/supabase/client';
 
 const STORAGE_KEY = 'pomodoro_state_v1';
-const DEFAULT_COINS = 0;
-const LOST_FOCUS_THRESHOLD = 15; // seconds to mark invalid
+const LOST_FOCUS_THRESHOLD = 15; // seconds hidden to invalidate a focus block
 
 type PomodoroCompletionFeedback = {
   severity: 'success' | 'warning' | 'info';
@@ -49,7 +58,6 @@ type PomodoroStore = {
   pomodoro: Pomodoro | null;
   cycleState: PomodoroCycleState;
   phaseEndsAtEpochMs: number | null;
-  economy: { coins: number };
   history: PomodoroHistoryItem[];
   settings: PomodoroSettings;
   settingsLoading: boolean;
@@ -71,10 +79,10 @@ type PomodoroStore = {
   pausePomodoro: () => Promise<void>;
   resumePomodoro: () => Promise<void>;
   completePomodoro: (opts?: CompletePomodoroOptions) => Promise<void>;
+  invalidateActivePomodoro: (reason: PomodoroInvalidationReason) => Promise<void>;
   resetPomodoro: () => Promise<void>;
   advanceToNextPhase: () => Promise<boolean>;
   penalizeLostFocus: (seconds: number) => Promise<void>;
-  addCoins: (amount: number) => void;
   loadFromStorage: () => void;
   loadHistory: () => Promise<void>;
   loadSettings: () => Promise<void>;
@@ -105,7 +113,6 @@ function saveToStorage(state: Partial<PomodoroStore>) {
       pomodoro: state.pomodoro ?? null,
       cycleState: state.cycleState ?? createIdlePomodoroCycleState(state.settings ?? DEFAULT_POMODORO_SETTINGS),
       phaseEndsAtEpochMs: state.phaseEndsAtEpochMs ?? null,
-      economy: state.economy ?? { coins: DEFAULT_COINS },
       history: state.history ?? [],
       settings: state.settings ?? DEFAULT_POMODORO_SETTINGS,
       completedFocusSessionsCount: state.completedFocusSessionsCount ?? persistedCompletedFocusSessionsCount,
@@ -131,6 +138,11 @@ function isActiveMode(mode: string): mode is Pomodoro['mode'] {
 function getRemainingFromEndsAt(phaseEndsAtEpochMs: number): number {
   const diff = Math.ceil((phaseEndsAtEpochMs - Date.now()) / 1000);
   return Math.max(0, diff);
+}
+
+function getInvalidationFeedbackMessage(reason?: PomodoroInvalidationReason): string {
+  const label = getPomodoroInvalidationReasonLabel(reason);
+  return `Sessão interrompida por ${label}. O progresso não foi contabilizado.`;
 }
 
 function hydrateCycleState(parsed: { cycleState?: PomodoroCycleState; pomodoro?: Pomodoro | null }, settings: PomodoroSettings): PomodoroCycleState {
@@ -159,7 +171,6 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
   pomodoro: null,
   cycleState: createIdlePomodoroCycleState(DEFAULT_POMODORO_SETTINGS),
   phaseEndsAtEpochMs: null,
-  economy: { coins: DEFAULT_COINS },
   history: [],
   settings: DEFAULT_POMODORO_SETTINGS,
   settingsLoading: false,
@@ -224,12 +235,12 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
       cycleState,
       phaseEndsAtEpochMs,
       startError: null,
+      completionFeedback: null,
     });
     saveToStorage({
       pomodoro: p,
       cycleState,
       phaseEndsAtEpochMs,
-      economy: get().economy,
       history: get().history,
       settings,
     });
@@ -272,7 +283,6 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
       pomodoro: updated,
       cycleState,
       phaseEndsAtEpochMs: s.phaseEndsAtEpochMs,
-      economy: s.economy,
       history: s.history,
       settings: s.settings,
     });
@@ -293,7 +303,6 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
       pomodoro: updated,
       cycleState: pausedCycle,
       phaseEndsAtEpochMs: null,
-      economy: s.economy,
       history: s.history,
       settings: s.settings,
     });
@@ -316,7 +325,6 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
       pomodoro: updated,
       cycleState: resumedCycle,
       phaseEndsAtEpochMs,
-      economy: s.economy,
       history: s.history,
       settings: s.settings,
     });
@@ -390,7 +398,7 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
         } else if (completionResolution.status === 'invalidated') {
           completionFeedback = {
             severity: 'warning',
-            message: 'Bloco de foco encerrado como invalido e nao foi contabilizado.',
+            message: getInvalidationFeedbackMessage(p.invalidReason),
           };
         } else {
           completionFeedback = {
@@ -432,16 +440,10 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
         totalFocusStudySeconds,
       });
 
-      // credit coins only if valid
-      if (p.isValid) {
-        const coinsToAdd = 5; // configurable later
-        get().addCoins(coinsToAdd);
-      }
       saveToStorage({
         pomodoro: nextPomodoro,
         cycleState: nextCycle,
         phaseEndsAtEpochMs,
-        economy: get().economy,
         history: newHistory,
         settings: s.settings,
         completedFocusSessionsCount,
@@ -452,7 +454,7 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
       if (s.userId && p.pomodoroId.length > 20) {
         const recordUpdates = mapPomodoroToRecord(updatedPomodoro, s.userId);
         await updatePomodoroSupabase(p.pomodoroId, {
-          isComplete: true,
+          isComplete: completionResolution.status === 'completed',
           endedAt,
           metadata: recordUpdates.metadata,
         });
@@ -461,7 +463,7 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
       if (p.mode === 'focus' && completionResolution.shouldPersist && s.userId) {
         const focusSequenceIndex = s.cycleState.totalFocusSessionsCompleted + 1;
         const cycleIndex = Math.floor((focusSequenceIndex - 1) / settings.cyclesBeforeLongBreak) + 1;
-        await registerFocusSession({
+        const { data: sessionRow } = await registerFocusSession({
           userId: s.userId,
           sourcePomodoroId: p.pomodoroId,
           phaseType: p.mode,
@@ -476,6 +478,37 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
           isValid: p.isValid,
           invalidReason: p.invalidReason,
         });
+
+        if (sessionRow) {
+          const rewardResult = await awardFocusSessionCoins(
+            { awardFocusSessionReward },
+            {
+              userId: s.userId,
+              focusSessionId: sessionRow.sessionId,
+              plannedDurationSeconds: p.duration,
+              completionStatus: completionResolution.status,
+              isSessionValid: p.isValid,
+            },
+          );
+
+          if (rewardResult.awarded) {
+            useWalletStore.getState().setBalance(rewardResult.newBalance);
+            void useWalletStore.getState().loadWallet();
+            set({
+              completionFeedback: {
+                severity: 'success',
+                message: `Sessao concluida com sucesso. Voce ganhou ${rewardResult.awardedAmount} moedas.`,
+              },
+            });
+          } else if (rewardResult.reason === 'integrity_error') {
+            set({
+              completionFeedback: {
+                severity: 'warning',
+                message: 'Sessao concluida, mas a recompensa nao foi creditada por erro de integridade.',
+              },
+            });
+          }
+        }
       }
 
       if (nextPomodoro && s.userId) {
@@ -495,10 +528,44 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
     }
   },
 
+  invalidateActivePomodoro: async (reason) => {
+    const s = get();
+    const p = s.pomodoro;
+    if (!p || p.status === 'finished') return;
+
+    if (
+      s.completionInFlightPomodoroId === p.pomodoroId
+      || s.lastCompletionPomodoroId === p.pomodoroId
+    ) {
+      return;
+    }
+
+    const updated: Pomodoro = {
+      ...p,
+      isValid: false,
+      invalidReason: reason,
+    };
+
+    set({ pomodoro: updated });
+    saveToStorage({
+      pomodoro: updated,
+      cycleState: s.cycleState,
+      phaseEndsAtEpochMs: s.phaseEndsAtEpochMs,
+      history: s.history,
+      settings: s.settings,
+    });
+
+    await get().completePomodoro({
+      resetToFocus: true,
+      autoStartNext: false,
+      completionTrigger: reason,
+    });
+  },
+
   resetPomodoro: async () => {
     const s = get();
     if (s.pomodoro) {
-      await get().completePomodoro({ resetToFocus: true, completionTrigger: 'reset' });
+      await get().invalidateActivePomodoro('manual_cancel');
       return;
     }
 
@@ -508,7 +575,6 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
       pomodoro: null,
       cycleState: resetState,
       phaseEndsAtEpochMs: null,
-      economy: s.economy,
       history: s.history,
       settings: s.settings,
     });
@@ -528,16 +594,22 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
   penalizeLostFocus: async (seconds: number) => {
     const s = get();
     const p = s.pomodoro;
-    if (!p || p.status !== 'running') return;
+    if (!p || p.status !== 'running' || p.mode !== 'focus') return;
+
     const lost = p.lostFocusSeconds + seconds;
-    const isValid = lost <= LOST_FOCUS_THRESHOLD;
-    const updated: Pomodoro = { ...p, lostFocusSeconds: lost, isValid, invalidReason: isValid ? undefined : 'lost_focus' };
+    const shouldInvalidate = lost > LOST_FOCUS_THRESHOLD;
+    const updated: Pomodoro = {
+      ...p,
+      lostFocusSeconds: lost,
+      isValid: !shouldInvalidate,
+      invalidReason: shouldInvalidate ? 'tab_hidden_timeout' : p.invalidReason,
+    };
+
     set({ pomodoro: updated });
     saveToStorage({
       pomodoro: updated,
       cycleState: s.cycleState,
       phaseEndsAtEpochMs: s.phaseEndsAtEpochMs,
-      economy: s.economy,
       history: s.history,
       settings: s.settings,
     });
@@ -548,20 +620,10 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
         metadata: recordUpdates.metadata
       });
     }
-  },
 
-  addCoins: (amount: number) => {
-    const s = get();
-    const next = { coins: (s.economy?.coins ?? 0) + amount };
-    set({ economy: next });
-    saveToStorage({
-      pomodoro: s.pomodoro,
-      cycleState: s.cycleState,
-      phaseEndsAtEpochMs: s.phaseEndsAtEpochMs,
-      economy: next,
-      history: s.history,
-      settings: s.settings,
-    });
+    if (shouldInvalidate) {
+      await get().invalidateActivePomodoro('tab_hidden_timeout');
+    }
   },
 
   loadFromStorage: () => {
@@ -575,7 +637,6 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
         pomodoro: parsed.pomodoro ?? null,
         cycleState: hydratedCycleState,
         phaseEndsAtEpochMs: parsed.phaseEndsAtEpochMs ?? null,
-        economy: parsed.economy ?? { coins: DEFAULT_COINS },
         history: parsed.history ?? [],
         settings: normalizedSettings,
         completedFocusSessionsCount: parsed.completedFocusSessionsCount ?? 0,
@@ -615,7 +676,6 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
         pomodoro: get().pomodoro,
         cycleState: get().cycleState,
         phaseEndsAtEpochMs: get().phaseEndsAtEpochMs,
-        economy: get().economy,
         history: historyItems,
         settings: get().settings,
       });
@@ -644,7 +704,6 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
         pomodoro: get().pomodoro,
         cycleState,
         phaseEndsAtEpochMs: get().phaseEndsAtEpochMs,
-        economy: get().economy,
         history: get().history,
         settings: normalized,
       });
@@ -713,7 +772,6 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
       pomodoro: s.pomodoro,
       cycleState: adjustedCycleState,
       phaseEndsAtEpochMs: s.phaseEndsAtEpochMs,
-      economy: s.economy,
       history: s.history,
       settings: normalized,
     });
@@ -779,7 +837,6 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
         pomodoro: null,
         cycleState: resetState,
         phaseEndsAtEpochMs: null,
-        economy: s.economy,
         history: s.history,
         settings: s.settings,
       });
@@ -807,7 +864,6 @@ try {
       pomodoro: parsed.pomodoro ?? null,
       cycleState: hydratedCycleState,
       phaseEndsAtEpochMs: parsed.phaseEndsAtEpochMs ?? null,
-      economy: parsed.economy ?? { coins: DEFAULT_COINS },
       history: parsed.history ?? [],
       settings: normalizedSettings,
       completedFocusSessionsCount: parsed.completedFocusSessionsCount ?? 0,

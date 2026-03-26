@@ -1,4 +1,5 @@
 import type { PomodoroMode } from '../../domain/pomodoro/types/enums/PomodoroMode';
+import type { PomodoroInvalidationReason } from '../../domain/pomodoro/types/PomodoroInvalidation';
 import type {
     PomodoroCompletionTrigger,
     PomodoroSessionStatus,
@@ -22,7 +23,7 @@ export type RegisterFocusSessionInput = {
   cycleIndex: number;
   trigger: PomodoroCompletionTrigger;
   isValid: boolean;
-  invalidReason?: string;
+  invalidReason?: PomodoroInvalidationReason;
 };
 
 export type PomodoroSessionServiceError = {
