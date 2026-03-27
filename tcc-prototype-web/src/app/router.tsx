@@ -7,8 +7,10 @@ import LoginPage from '../pages/Auth/LoginPage';
 import RegisterPage from '../pages/Auth/RegisterPage';
 import ResetPasswordPage from '../pages/Auth/ResetPasswordPage';
 import HomePage from '../pages/Home/HomePage';
+import InventoryPage from '../pages/Inventory/InventoryPage';
 import MetodologiaPage from '../pages/Metodologia/MetodologiaPage';
 import PomodoroPage from '../pages/Pomodoro/PomodoroPage';
+import ShopPage from '../pages/Shop/ShopPage';
 import { usePomodoroStore } from '../state/usePomodoroStore';
 
 const PomodoroAbandonmentRouteGuard: React.FC = () => {
@@ -42,8 +44,8 @@ const Router: React.FC = () => (
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/pomodoro" element={<PomodoroPage />} />
-      <Route path="/shop" element={<div>Shop (placeholder)</div>} />
-      <Route path="/inventory" element={<div>Inventory (placeholder)</div>} />
+      <Route path="/shop" element={<ShopPage />} />
+      <Route path="/inventory" element={<InventoryPage />} />
       <Route path="/history" element={<div>History (placeholder)</div>} />
       <Route path="/settings" element={<div>Settings (placeholder)</div>} />
       <Route path="/privacy" element={<div>Privacy (placeholder)</div>} />

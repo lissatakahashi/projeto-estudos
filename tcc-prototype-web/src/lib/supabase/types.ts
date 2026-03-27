@@ -198,6 +198,103 @@ export type Database = {
           }
         ]
       }
+      shopItems: {
+        Row: {
+          itemId: string
+          name: string
+          slug: string
+          description: string
+          price: number
+          category: string
+          rarity: string
+          imageUrl: string | null
+          isActive: boolean
+          createdAt: string
+          updatedAt: string
+        }
+        Insert: {
+          itemId?: string
+          name: string
+          slug: string
+          description?: string
+          price: number
+          category: string
+          rarity?: string
+          imageUrl?: string | null
+          isActive?: boolean
+          createdAt?: string
+          updatedAt?: string
+        }
+        Update: {
+          itemId?: string
+          name?: string
+          slug?: string
+          description?: string
+          price?: number
+          category?: string
+          rarity?: string
+          imageUrl?: string | null
+          isActive?: boolean
+          createdAt?: string
+          updatedAt?: string
+        }
+        Relationships: []
+      }
+      userInventory: {
+        Row: {
+          inventoryEntryId: string
+          userId: string
+          itemId: string
+          quantity: number
+          purchaseId: string
+          walletTransactionId: string
+          acquiredAt: string
+          updatedAt: string
+        }
+        Insert: {
+          inventoryEntryId?: string
+          userId: string
+          itemId: string
+          quantity?: number
+          purchaseId: string
+          walletTransactionId: string
+          acquiredAt?: string
+          updatedAt?: string
+        }
+        Update: {
+          inventoryEntryId?: string
+          userId?: string
+          itemId?: string
+          quantity?: number
+          purchaseId?: string
+          walletTransactionId?: string
+          acquiredAt?: string
+          updatedAt?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "userInventory_userId_fkey"
+            columns: ["userId"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "userInventory_itemId_fkey"
+            columns: ["itemId"]
+            isOneToOne: false
+            referencedRelation: "shopItems"
+            referencedColumns: ["itemId"]
+          },
+          {
+            foreignKeyName: "userInventory_walletTransactionId_fkey"
+            columns: ["walletTransactionId"]
+            isOneToOne: true
+            referencedRelation: "walletTransactions"
+            referencedColumns: ["transactionId"]
+          }
+        ]
+      }
       wallets: {
         Row: {
           walletId: string
@@ -297,6 +394,19 @@ export type Database = {
           transaction_id: string | null
         }[]
       }
+      purchase_shop_item: {
+        Args: {
+          p_item_id: string
+        }
+        Returns: {
+          purchased: boolean
+          reason: string
+          new_balance: number
+          transaction_id: string | null
+          inventory_entry_id: string | null
+          purchase_id: string | null
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
@@ -318,6 +428,12 @@ export type PomodoroSessionUpdate = Database['public']['Tables']['pomodoroSessio
 export type UserPomodoroSettingsRow = Database['public']['Tables']['userPomodoroSettings']['Row'];
 export type UserPomodoroSettingsInsert = Database['public']['Tables']['userPomodoroSettings']['Insert'];
 export type UserPomodoroSettingsUpdate = Database['public']['Tables']['userPomodoroSettings']['Update'];
+export type ShopItemRow = Database['public']['Tables']['shopItems']['Row'];
+export type ShopItemInsert = Database['public']['Tables']['shopItems']['Insert'];
+export type ShopItemUpdate = Database['public']['Tables']['shopItems']['Update'];
+export type UserInventoryRow = Database['public']['Tables']['userInventory']['Row'];
+export type UserInventoryInsert = Database['public']['Tables']['userInventory']['Insert'];
+export type UserInventoryUpdate = Database['public']['Tables']['userInventory']['Update'];
 export type WalletRow = Database['public']['Tables']['wallets']['Row'];
 export type WalletInsert = Database['public']['Tables']['wallets']['Insert'];
 export type WalletUpdate = Database['public']['Tables']['wallets']['Update'];
