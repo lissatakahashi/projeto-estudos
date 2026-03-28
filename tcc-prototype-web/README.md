@@ -45,6 +45,12 @@ npm run e2e
 ## Escopo
 Protótipo paralelo sem backend. Guardamos preferências e progresso em localStorage (LGPD: apenas local).
 
+## Inventario e Politica de Itens
+- Fluxo persistente: compra na loja grava em `userInventory` no Supabase e a tela de inventario consome esses dados.
+- Politica adotada: itens unicos por usuario (`UNIQUE (userId, itemId)`), abordagem simples e defensavel para o TCC.
+- Preparacao para evolucao: inventario possui campos para equipar/aplicar item (`isEquipped`, `equipSlot`, `appliedTarget`), mantendo base para personalizacao de ambiente/personagem/pet.
+- Integracao imediata: apos compra, a loja dispara recarga do inventario e a store usa sincronizacao realtime para refletir mudancas sem refresh manual.
+
 ## Rodando com Docker (portas ajustadas)
 
 Se você tem outra aplicação usando as portas padrão do Vite, alterei as portas do protótipo para evitar conflito:

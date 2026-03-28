@@ -4,6 +4,12 @@ export type ShopItemCategory = (typeof SHOP_ITEM_CATEGORIES)[number];
 export const SHOP_ITEM_RARITIES = ['common', 'rare', 'epic', 'legendary'] as const;
 export type ShopItemRarity = (typeof SHOP_ITEM_RARITIES)[number];
 
+export const INVENTORY_EQUIP_SLOTS = ['environment', 'avatar', 'pet', 'badge'] as const;
+export type InventoryEquipSlot = (typeof INVENTORY_EQUIP_SLOTS)[number];
+
+export const INVENTORY_APPLY_TARGETS = ['environment', 'character', 'pet', 'none'] as const;
+export type InventoryApplyTarget = (typeof INVENTORY_APPLY_TARGETS)[number];
+
 export type ShopItem = {
   itemId: string;
   name: string;
@@ -23,13 +29,30 @@ export type InventoryEntry = {
   userId: string;
   itemId: string;
   quantity: number;
+  isEquipped: boolean;
+  equipSlot: InventoryEquipSlot | null;
+  appliedTarget: InventoryApplyTarget | null;
+  createdAt: string;
   acquiredAt: string;
+  updatedAt: string;
   purchaseId: string;
   walletTransactionId: string;
 };
 
-export type InventoryItem = InventoryEntry & {
+export type InventoryItemWithCatalog = InventoryEntry & {
   item: ShopItem;
+  isReadyForCustomization: boolean;
+};
+
+export type InventoryItem = InventoryItemWithCatalog;
+
+export type InventoryCollectionStatus = 'idle' | 'loading' | 'empty' | 'loaded' | 'error';
+
+export type InventoryLoadResult = {
+  data: InventoryItem[];
+  status: InventoryCollectionStatus;
+  totalItems: number;
+  error: string | null;
 };
 
 export type ShopPurchasePayload = {

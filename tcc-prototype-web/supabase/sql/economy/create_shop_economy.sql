@@ -20,6 +20,10 @@ CREATE TABLE IF NOT EXISTS public."userInventory" (
     "userId" UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     "itemId" UUID NOT NULL REFERENCES public."shopItems"("itemId") ON DELETE RESTRICT,
     "quantity" INTEGER NOT NULL DEFAULT 1 CHECK ("quantity" > 0),
+    "isEquipped" BOOLEAN NOT NULL DEFAULT FALSE,
+    "equipSlot" TEXT CHECK ("equipSlot" IN ('environment', 'avatar', 'pet', 'badge')),
+    "appliedTarget" TEXT CHECK ("appliedTarget" IN ('environment', 'character', 'pet', 'none')),
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     "purchaseId" UUID NOT NULL,
     "walletTransactionId" UUID NOT NULL REFERENCES public."walletTransactions"("transactionId") ON DELETE RESTRICT,
     "acquiredAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -31,6 +35,10 @@ CREATE TABLE IF NOT EXISTS public."userInventory" (
 
 CREATE INDEX IF NOT EXISTS user_inventory_user_acquired_idx
     ON public."userInventory"("userId", "acquiredAt" DESC);
+
+CREATE UNIQUE INDEX IF NOT EXISTS user_inventory_one_equipped_per_slot_idx
+    ON public."userInventory"("userId", "equipSlot")
+    WHERE "isEquipped" = TRUE AND "equipSlot" IS NOT NULL;
 
 DROP TRIGGER IF EXISTS shop_items_set_updated_at ON public."shopItems";
 CREATE TRIGGER shop_items_set_updated_at

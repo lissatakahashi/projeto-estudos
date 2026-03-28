@@ -246,6 +246,10 @@ export type Database = {
           userId: string
           itemId: string
           quantity: number
+          isEquipped: boolean
+          equipSlot: string | null
+          appliedTarget: string | null
+          createdAt: string
           purchaseId: string
           walletTransactionId: string
           acquiredAt: string
@@ -256,6 +260,10 @@ export type Database = {
           userId: string
           itemId: string
           quantity?: number
+          isEquipped?: boolean
+          equipSlot?: string | null
+          appliedTarget?: string | null
+          createdAt?: string
           purchaseId: string
           walletTransactionId: string
           acquiredAt?: string
@@ -266,6 +274,10 @@ export type Database = {
           userId?: string
           itemId?: string
           quantity?: number
+          isEquipped?: boolean
+          equipSlot?: string | null
+          appliedTarget?: string | null
+          createdAt?: string
           purchaseId?: string
           walletTransactionId?: string
           acquiredAt?: string

@@ -74,6 +74,7 @@ describe('useShopStore', () => {
       userId: 'user-1',
       items: [],
       inventory: [],
+      inventoryStatus: 'idle',
       loadingCatalog: false,
       loadingInventory: false,
       pendingPurchaseByItemId: {},
@@ -111,6 +112,7 @@ describe('useShopStore', () => {
     expect(result.purchased).toBe(true);
     expect(walletSetBalanceMock).toHaveBeenCalledWith(77);
     expect(walletLoadWalletMock).toHaveBeenCalledTimes(1);
+    expect(listUserInventoryMock).toHaveBeenCalledWith('user-1');
     expect(useShopStore.getState().feedback?.severity).toBe('success');
     expect(useShopStore.getState().pendingPurchaseByItemId['item-2']).toBeUndefined();
   });

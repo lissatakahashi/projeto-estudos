@@ -1,4 +1,9 @@
-import type { InventoryItem, ShopItem } from '../../domain/shop/types/shop';
+import type {
+    InventoryApplyTarget,
+    InventoryEquipSlot,
+    InventoryItem,
+    ShopItem,
+} from '../../domain/shop/types/shop';
 import { supabase } from './client';
 import type { Database } from './types';
 
@@ -96,10 +101,16 @@ export async function listUserInventory(
           userId: entry.userId,
           itemId: entry.itemId,
           quantity: entry.quantity,
+          isEquipped: Boolean((entry as Partial<UserInventoryRow>).isEquipped ?? false),
+          equipSlot: ((entry as Partial<UserInventoryRow>).equipSlot ?? null) as InventoryEquipSlot | null,
+          appliedTarget: ((entry as Partial<UserInventoryRow>).appliedTarget ?? null) as InventoryApplyTarget | null,
+          createdAt: (entry as Partial<UserInventoryRow>).createdAt ?? entry.acquiredAt,
           acquiredAt: entry.acquiredAt,
+          updatedAt: entry.updatedAt,
           purchaseId: entry.purchaseId,
           walletTransactionId: entry.walletTransactionId,
           item,
+          isReadyForCustomization: Boolean(item.isActive),
         };
       })
       .filter((entry): entry is InventoryItem => Boolean(entry));

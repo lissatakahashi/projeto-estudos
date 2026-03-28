@@ -1,11 +1,14 @@
 import {
     Alert,
     Box,
+    Button,
     Card,
     CardContent,
+    CardMedia,
     Chip,
     CircularProgress,
     Container,
+    Divider,
     Stack,
     Typography,
 } from '@mui/material';
@@ -16,6 +19,7 @@ import { useShopStore } from '../../state/useShopStore';
 const InventoryPage: React.FC = () => {
   const userId = useShopStore((s) => s.userId);
   const inventory = useShopStore((s) => s.inventory);
+  const inventoryStatus = useShopStore((s) => s.inventoryStatus);
   const loadingInventory = useShopStore((s) => s.loadingInventory);
   const error = useShopStore((s) => s.error);
   const loadInventory = useShopStore((s) => s.loadInventory);
@@ -56,10 +60,24 @@ const InventoryPage: React.FC = () => {
           </Box>
         )}
 
-        {userId && !loadingInventory && inventory.length === 0 && (
-          <Alert severity="info">
-            Seu inventario esta vazio. Acesse a loja para adquirir itens.
-          </Alert>
+        {userId && !loadingInventory && inventoryStatus === 'empty' && (
+          <Card variant="outlined" sx={{ borderRadius: 3 }}>
+            <CardContent>
+              <Stack spacing={1.5}>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  Voce ainda nao possui itens
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Conclua sessoes Pomodoro, acumule moedas e compre itens na loja para comecar sua personalizacao.
+                </Typography>
+                <Box>
+                  <Button component={RouterLink} to="/shop" variant="contained">
+                    Ir para loja
+                  </Button>
+                </Box>
+              </Stack>
+            </CardContent>
+          </Card>
         )}
 
         {userId && inventory.length > 0 && (
@@ -75,7 +93,15 @@ const InventoryPage: React.FC = () => {
             }}
           >
             {inventory.map((entry) => (
-              <Card key={entry.inventoryEntryId} variant="outlined" sx={{ borderRadius: 3 }}>
+              <Card key={entry.inventoryEntryId} variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
+                {entry.item.imageUrl && (
+                  <CardMedia
+                    component="img"
+                    image={entry.item.imageUrl}
+                    height="140"
+                    alt={`Visual do item ${entry.item.name}`}
+                  />
+                )}
                 <CardContent>
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>
                     {entry.item.name}
@@ -85,11 +111,31 @@ const InventoryPage: React.FC = () => {
                     <Chip size="small" variant="outlined" label={entry.item.category} sx={{ textTransform: 'capitalize' }} />
                     <Chip size="small" color="primary" label={entry.item.rarity} sx={{ textTransform: 'capitalize' }} />
                     <Chip size="small" color="success" label={`Qtd: ${entry.quantity}`} />
+                    <Chip
+                      size="small"
+                      color={entry.isEquipped ? 'success' : 'default'}
+                      variant={entry.isEquipped ? 'filled' : 'outlined'}
+                      label={entry.isEquipped ? 'Equipado' : 'Não equipado'}
+                    />
                   </Stack>
 
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
                     {entry.item.description}
                   </Typography>
+
+                  <Divider sx={{ my: 1.5 }} />
+
+                  <Stack spacing={0.75}>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                      Status de personalização: {entry.isReadyForCustomization ? 'pronto para uso futuro' : 'aguardando disponibilidade'}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                      Slot previsto: {entry.equipSlot ?? 'não definido'}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                      Alvo previsto: {entry.appliedTarget ?? 'não definido'}
+                    </Typography>
+                  </Stack>
 
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
                     Adquirido em: {new Date(entry.acquiredAt).toLocaleString('pt-BR')}

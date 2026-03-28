@@ -1,5 +1,10 @@
 import create from 'zustand';
-import type { InventoryItem, ShopItem, ShopPurchaseResult } from '../domain/shop/types/shop';
+import type {
+  InventoryCollectionStatus,
+  InventoryItem,
+  ShopItem,
+  ShopPurchaseResult,
+} from '../domain/shop/types/shop';
 import { fetchActiveShopCatalog } from '../domain/shop/usecases/fetchActiveShopCatalog';
 import { fetchUserInventory } from '../domain/shop/usecases/fetchUserInventory';
 import { purchaseShopItem } from '../domain/shop/usecases/purchaseShopItem';
@@ -20,6 +25,7 @@ type ShopState = {
   userId: string | null;
   items: ShopItem[];
   inventory: InventoryItem[];
+  inventoryStatus: InventoryCollectionStatus;
   loadingCatalog: boolean;
   loadingInventory: boolean;
   pendingPurchaseByItemId: Record<string, boolean>;
@@ -46,6 +52,7 @@ export const useShopStore = create<ShopState>((set, get) => ({
   userId: null,
   items: [],
   inventory: [],
+  inventoryStatus: 'idle',
   loadingCatalog: false,
   loadingInventory: false,
   pendingPurchaseByItemId: {},
@@ -54,11 +61,12 @@ export const useShopStore = create<ShopState>((set, get) => ({
 
   setUserId: (userId) => {
     set({ userId, error: null });
+    refreshInventoryRealtimeSubscription(userId);
 
     void get().loadCatalog();
 
     if (!userId) {
-      set({ inventory: [], pendingPurchaseByItemId: {} });
+      set({ inventory: [], inventoryStatus: 'idle', pendingPurchaseByItemId: {} });
       return;
     }
 
@@ -83,11 +91,11 @@ export const useShopStore = create<ShopState>((set, get) => ({
     const { userId } = get();
 
     if (!userId) {
-      set({ inventory: [], loadingInventory: false });
+      set({ inventory: [], inventoryStatus: 'idle', loadingInventory: false });
       return;
     }
 
-    set({ loadingInventory: true, error: null });
+    set({ loadingInventory: true, inventoryStatus: 'loading', error: null });
 
     const result = await fetchUserInventory(
       {
@@ -98,9 +106,14 @@ export const useShopStore = create<ShopState>((set, get) => ({
 
     set({
       inventory: result.data,
+      inventoryStatus: result.status,
       loadingInventory: false,
       error: result.error,
     });
+
+    if (result.error) {
+      set({ inventoryStatus: 'error' });
+    }
   },
 
   purchaseItem: async (itemId) => {
@@ -224,6 +237,42 @@ export const useShopStore = create<ShopState>((set, get) => ({
 
   isOwned: (itemId) => get().inventory.some((entry) => entry.itemId === itemId),
 }));
+
+type RealtimeChannelLike = {
+  on: (event: string, filter: Record<string, unknown>, callback: () => void) => RealtimeChannelLike;
+  subscribe: () => unknown;
+};
+
+let inventoryRealtimeChannel: RealtimeChannelLike | null = null;
+
+function refreshInventoryRealtimeSubscription(userId: string | null): void {
+  if (inventoryRealtimeChannel) {
+    void supabase.removeChannel(inventoryRealtimeChannel as never);
+    inventoryRealtimeChannel = null;
+  }
+
+  if (!userId || typeof supabase.channel !== 'function') {
+    return;
+  }
+
+  const channel = supabase
+    .channel(`shop-inventory-${userId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'userInventory',
+        filter: `userId=eq.${userId}`,
+      },
+      () => {
+        void useShopStore.getState().loadInventory();
+      },
+    );
+
+  channel.subscribe();
+  inventoryRealtimeChannel = channel as unknown as RealtimeChannelLike;
+}
 
 supabase.auth.onAuthStateChange((_event, session) => {
   useShopStore.getState().setUserId(session?.user?.id ?? null);
