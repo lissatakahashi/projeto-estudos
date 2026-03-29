@@ -781,7 +781,7 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
         settingsSaving: false,
         settingsSuccessMessage:
           s.pomodoro && s.pomodoro.status !== 'finished'
-            ? 'Configuracao salva. A sessao atual foi mantida e as novas duracoes valem para as proximas sessoes.'
+            ? 'Configuração salva. A sessão atual foi mantida e as novas durações valem para as próximas sessões.'
             : 'Configuracao salva com sucesso.',
       });
       return true;

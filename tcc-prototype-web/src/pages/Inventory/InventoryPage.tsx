@@ -1,16 +1,16 @@
 import {
-    Alert,
-    Box,
-    Button,
-    Card,
-    CardContent,
-    CardMedia,
-    Chip,
-    CircularProgress,
-    Container,
-    Divider,
-    Stack,
-    Typography,
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardMedia,
+  Chip,
+  CircularProgress,
+  Container,
+  Divider,
+  Stack,
+  Typography,
 } from '@mui/material';
 import React, { useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
@@ -40,6 +40,11 @@ const InventoryPage: React.FC = () => {
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
             Itens adquiridos na loja para personalização do ambiente gamificado.
           </Typography>
+          {userId && (
+            <Button component={RouterLink} to="/environment" variant="outlined" sx={{ mt: 2 }}>
+              Ir para ambiente virtual
+            </Button>
+          )}
         </Box>
 
         {!userId && (

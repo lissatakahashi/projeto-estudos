@@ -6,6 +6,7 @@ import ForgotPasswordPage from '../pages/Auth/ForgotPasswordPage';
 import LoginPage from '../pages/Auth/LoginPage';
 import RegisterPage from '../pages/Auth/RegisterPage';
 import ResetPasswordPage from '../pages/Auth/ResetPasswordPage';
+import EnvironmentPage from '../pages/Environment/EnvironmentPage';
 import HomePage from '../pages/Home/HomePage';
 import InventoryPage from '../pages/Inventory/InventoryPage';
 import MetodologiaPage from '../pages/Metodologia/MetodologiaPage';
@@ -46,6 +47,7 @@ const Router: React.FC = () => (
       <Route path="/pomodoro" element={<PomodoroPage />} />
       <Route path="/shop" element={<ShopPage />} />
       <Route path="/inventory" element={<InventoryPage />} />
+      <Route path="/environment" element={<EnvironmentPage />} />
       <Route path="/history" element={<div>History (placeholder)</div>} />
       <Route path="/settings" element={<div>Settings (placeholder)</div>} />
       <Route path="/privacy" element={<div>Privacy (placeholder)</div>} />

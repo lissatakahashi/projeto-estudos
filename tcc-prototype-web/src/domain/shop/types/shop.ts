@@ -18,6 +18,16 @@ export type ShopItem = {
   price: number;
   category: ShopItemCategory;
   rarity: ShopItemRarity;
+  environmentSlot?:
+    | 'background'
+    | 'desk'
+    | 'wall'
+    | 'floor'
+    | 'decoration_left'
+    | 'decoration_right'
+    | 'shelf'
+    | 'window_area'
+    | null;
   imageUrl: string | null;
   isActive: boolean;
   createdAt: string;

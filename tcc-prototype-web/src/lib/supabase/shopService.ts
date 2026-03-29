@@ -33,6 +33,7 @@ function mapShopItemRow(row: ShopItemRow): ShopItem {
     price: row.price,
     category: row.category as ShopItem['category'],
     rarity: row.rarity as ShopItem['rarity'],
+    environmentSlot: (row as Partial<ShopItemRow>).environmentSlot as ShopItem['environmentSlot'],
     imageUrl: row.imageUrl,
     isActive: row.isActive,
     createdAt: row.createdAt,

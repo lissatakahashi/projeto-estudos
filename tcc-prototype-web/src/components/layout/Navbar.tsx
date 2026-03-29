@@ -21,6 +21,7 @@ const navLinks = [
   { to: '/pomodoro', label: 'Pomodoro' },
   { to: '/shop', label: 'Loja' },
   { to: '/inventory', label: 'Inventário' },
+  { to: '/environment', label: 'Ambiente' },
   { to: '/history', label: 'Histórico' },
   { to: '/about', label: 'Sobre' },
 ];

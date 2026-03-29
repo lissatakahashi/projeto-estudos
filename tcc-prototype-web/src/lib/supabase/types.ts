@@ -207,6 +207,7 @@ export type Database = {
           price: number
           category: string
           rarity: string
+          environmentSlot: string | null
           imageUrl: string | null
           isActive: boolean
           createdAt: string
@@ -220,6 +221,7 @@ export type Database = {
           price: number
           category: string
           rarity?: string
+          environmentSlot?: string | null
           imageUrl?: string | null
           isActive?: boolean
           createdAt?: string
@@ -233,6 +235,7 @@ export type Database = {
           price?: number
           category?: string
           rarity?: string
+          environmentSlot?: string | null
           imageUrl?: string | null
           isActive?: boolean
           createdAt?: string
@@ -304,6 +307,61 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "walletTransactions"
             referencedColumns: ["transactionId"]
+          }
+        ]
+      }
+      userEnvironmentSlots: {
+        Row: {
+          id: string
+          userId: string
+          slotName: string
+          inventoryEntryId: string
+          itemId: string
+          equippedAt: string
+          createdAt: string
+          updatedAt: string
+        }
+        Insert: {
+          id?: string
+          userId: string
+          slotName: string
+          inventoryEntryId: string
+          itemId: string
+          equippedAt?: string
+          createdAt?: string
+          updatedAt?: string
+        }
+        Update: {
+          id?: string
+          userId?: string
+          slotName?: string
+          inventoryEntryId?: string
+          itemId?: string
+          equippedAt?: string
+          createdAt?: string
+          updatedAt?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "userEnvironmentSlots_userId_fkey"
+            columns: ["userId"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "userEnvironmentSlots_inventoryEntryId_fkey"
+            columns: ["inventoryEntryId"]
+            isOneToOne: false
+            referencedRelation: "userInventory"
+            referencedColumns: ["inventoryEntryId"]
+          },
+          {
+            foreignKeyName: "userEnvironmentSlots_itemId_fkey"
+            columns: ["itemId"]
+            isOneToOne: false
+            referencedRelation: "shopItems"
+            referencedColumns: ["itemId"]
           }
         ]
       }
@@ -419,6 +477,19 @@ export type Database = {
           purchase_id: string | null
         }[]
       }
+      equip_user_environment_item: {
+        Args: {
+          p_slot_name: string
+          p_inventory_entry_id: string | null
+        }
+        Returns: {
+          success: boolean
+          reason: string
+          slot_name: string
+          inventory_entry_id: string | null
+          item_id: string | null
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
@@ -446,6 +517,9 @@ export type ShopItemUpdate = Database['public']['Tables']['shopItems']['Update']
 export type UserInventoryRow = Database['public']['Tables']['userInventory']['Row'];
 export type UserInventoryInsert = Database['public']['Tables']['userInventory']['Insert'];
 export type UserInventoryUpdate = Database['public']['Tables']['userInventory']['Update'];
+export type UserEnvironmentSlotsRow = Database['public']['Tables']['userEnvironmentSlots']['Row'];
+export type UserEnvironmentSlotsInsert = Database['public']['Tables']['userEnvironmentSlots']['Insert'];
+export type UserEnvironmentSlotsUpdate = Database['public']['Tables']['userEnvironmentSlots']['Update'];
 export type WalletRow = Database['public']['Tables']['wallets']['Row'];
 export type WalletInsert = Database['public']['Tables']['wallets']['Insert'];
 export type WalletUpdate = Database['public']['Tables']['wallets']['Update'];
