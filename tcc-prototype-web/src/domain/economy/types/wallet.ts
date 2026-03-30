@@ -12,13 +12,15 @@ export type WalletTransactionReason =
   | 'focus_session_completed'
   | 'shop_purchase'
   | 'refund'
-  | 'manual_adjustment';
+  | 'manual_adjustment'
+  | 'pet_fed';
 
 export type WalletReferenceType =
   | 'pomodoro_session'
   | 'shop_purchase'
   | 'refund'
-  | 'system';
+  | 'system'
+  | 'pet_feed';
 
 export type WalletTransaction = {
   transactionId: string;

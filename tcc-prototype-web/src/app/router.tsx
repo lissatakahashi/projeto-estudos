@@ -10,6 +10,7 @@ import EnvironmentPage from '../pages/Environment/EnvironmentPage';
 import HomePage from '../pages/Home/HomePage';
 import InventoryPage from '../pages/Inventory/InventoryPage';
 import MetodologiaPage from '../pages/Metodologia/MetodologiaPage';
+import PetPage from '../pages/Pet/PetPage';
 import PomodoroPage from '../pages/Pomodoro/PomodoroPage';
 import ShopPage from '../pages/Shop/ShopPage';
 import { usePomodoroStore } from '../state/usePomodoroStore';
@@ -48,6 +49,7 @@ const Router: React.FC = () => (
       <Route path="/shop" element={<ShopPage />} />
       <Route path="/inventory" element={<InventoryPage />} />
       <Route path="/environment" element={<EnvironmentPage />} />
+      <Route path="/pet" element={<PetPage />} />
       <Route path="/history" element={<div>History (placeholder)</div>} />
       <Route path="/settings" element={<div>Settings (placeholder)</div>} />
       <Route path="/privacy" element={<div>Privacy (placeholder)</div>} />

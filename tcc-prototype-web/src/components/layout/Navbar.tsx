@@ -19,6 +19,7 @@ import ThemeToggle from './ThemeToggle';
 
 const navLinks = [
   { to: '/pomodoro', label: 'Pomodoro' },
+  { to: '/pet', label: 'Pet' },
   { to: '/shop', label: 'Loja' },
   { to: '/inventory', label: 'Inventário' },
   { to: '/environment', label: 'Ambiente' },

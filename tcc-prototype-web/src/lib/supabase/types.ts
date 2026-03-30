@@ -365,6 +365,47 @@ export type Database = {
           }
         ]
       }
+      userPetStates: {
+        Row: {
+          userId: string
+          petName: string
+          petType: string
+          hungerLevel: number
+          moodLevel: number
+          lastFedAt: string | null
+          createdAt: string
+          updatedAt: string
+        }
+        Insert: {
+          userId: string
+          petName?: string
+          petType?: string
+          hungerLevel?: number
+          moodLevel?: number
+          lastFedAt?: string | null
+          createdAt?: string
+          updatedAt?: string
+        }
+        Update: {
+          userId?: string
+          petName?: string
+          petType?: string
+          hungerLevel?: number
+          moodLevel?: number
+          lastFedAt?: string | null
+          createdAt?: string
+          updatedAt?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "userPetStates_userId_fkey"
+            columns: ["userId"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       wallets: {
         Row: {
           walletId: string
@@ -490,6 +531,30 @@ export type Database = {
           item_id: string | null
         }[]
       }
+      get_or_create_user_pet_state: {
+        Args: {}
+        Returns: {
+          user_id: string
+          pet_name: string
+          pet_type: string
+          hunger_level: number
+          mood_level: number
+          last_fed_at: string | null
+          created_at: string
+          updated_at: string
+        }[]
+      }
+      feed_user_pet: {
+        Args: {}
+        Returns: {
+          success: boolean
+          reason: string
+          new_balance: number
+          fed_at: string | null
+          cooldown_remaining_seconds: number
+          pet: Json
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
@@ -520,6 +585,9 @@ export type UserInventoryUpdate = Database['public']['Tables']['userInventory'][
 export type UserEnvironmentSlotsRow = Database['public']['Tables']['userEnvironmentSlots']['Row'];
 export type UserEnvironmentSlotsInsert = Database['public']['Tables']['userEnvironmentSlots']['Insert'];
 export type UserEnvironmentSlotsUpdate = Database['public']['Tables']['userEnvironmentSlots']['Update'];
+export type UserPetStatesRow = Database['public']['Tables']['userPetStates']['Row'];
+export type UserPetStatesInsert = Database['public']['Tables']['userPetStates']['Insert'];
+export type UserPetStatesUpdate = Database['public']['Tables']['userPetStates']['Update'];
 export type WalletRow = Database['public']['Tables']['wallets']['Row'];
 export type WalletInsert = Database['public']['Tables']['wallets']['Insert'];
 export type WalletUpdate = Database['public']['Tables']['wallets']['Update'];

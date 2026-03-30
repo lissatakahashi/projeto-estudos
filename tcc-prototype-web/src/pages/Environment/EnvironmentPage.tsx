@@ -1,20 +1,21 @@
 import {
-    Alert,
-    Box,
-    Button,
-    Card,
-    CardContent,
-    Chip,
-    CircularProgress,
-    Container,
-    Stack,
-    Typography,
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Container,
+  Stack,
+  Typography,
 } from '@mui/material';
 import React, { useEffect, useMemo } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import PetStatusCard from '../../components/pet/PetStatusCard';
 import {
-    ENVIRONMENT_SLOT_DEFINITIONS,
-    type EnvironmentSlotName,
+  ENVIRONMENT_SLOT_DEFINITIONS,
+  type EnvironmentSlotName,
 } from '../../domain/environment/types/environment';
 import { getCompatibleInventoryItemsBySlot } from '../../domain/environment/usecases/getCompatibleInventoryItemsBySlot';
 import { useEnvironmentStore } from '../../state/useEnvironmentStore';
@@ -85,6 +86,8 @@ const EnvironmentPage: React.FC = () => {
             Personalize seu ambiente de estudo aplicando itens do inventário em slots fixos e persistentes.
           </Typography>
         </Box>
+
+        {userId && <PetStatusCard compact />}
 
         {!userId && (
           <Alert severity="info">

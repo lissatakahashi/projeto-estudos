@@ -333,7 +333,7 @@ const PomodoroPage: React.FC = () => {
 
           {latestWalletTransaction && (
             <Typography variant="caption" color="text.secondary">
-              Ultima transacao: {latestWalletTransaction.transactionType === 'credit' ? '+' : '-'}
+              Última transação: {latestWalletTransaction.transactionType === 'credit' ? '+' : '-'}
               {latestWalletTransaction.amount} moedas ({latestWalletTransaction.reason}).
             </Typography>
           )}

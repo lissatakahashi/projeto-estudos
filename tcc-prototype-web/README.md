@@ -51,6 +51,12 @@ Protótipo paralelo sem backend. Guardamos preferências e progresso em localSto
 - Preparacao para evolucao: inventario possui campos para equipar/aplicar item (`isEquipped`, `equipSlot`, `appliedTarget`), mantendo base para personalizacao de ambiente/personagem/pet.
 - Integracao imediata: apos compra, a loja dispara recarga do inventario e a store usa sincronizacao realtime para refletir mudancas sem refresh manual.
 
+## Pet Virtual e Politica de Alimentacao
+- O pet virtual e persistido por usuario em `userPetStates`, com um registro por conta.
+- Politica adotada para o TCC: alimentar custa `5` moedas e possui cooldown de `60` segundos.
+- Justificativa academica: integra economia real do sistema com acao de cuidado, mantendo regra simples, auditavel e demonstravel em banca.
+- Integridade transacional: a funcao `feed_user_pet` valida saldo, debita carteira, registra transacao e atualiza estado do pet no mesmo fluxo.
+
 ## Rodando com Docker (portas ajustadas)
 
 Se você tem outra aplicação usando as portas padrão do Vite, alterei as portas do protótipo para evitar conflito:
