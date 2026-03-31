@@ -26,6 +26,8 @@ import {
   normalizeSettingsDraftValue,
   validatePomodoroSettingsDraft,
 } from '../../domain/pomodoro/validation/pomodoroSettingsValidation';
+import { useDashboardProgress } from '../../hooks/useDashboardProgress';
+import { useAuthSession } from '../../lib/supabase/hooks';
 import { usePomodoroStore } from '../../state/usePomodoroStore';
 import { useWalletStore } from '../../state/useWalletStore';
 
@@ -40,6 +42,10 @@ function formatTime(seconds: number) {
 }
 
 const PomodoroPage: React.FC = () => {
+  const session = useAuthSession();
+  const userId = session?.user?.id ?? null;
+  const dashboardProgress = useDashboardProgress(userId);
+
   const pomodoro = usePomodoroStore((s) => s.pomodoro);
   const cycleState = usePomodoroStore((s) => s.cycleState);
   const settings = usePomodoroStore((s) => s.settings);
@@ -196,7 +202,10 @@ const PomodoroPage: React.FC = () => {
   const plannedShortBreakLabel = `${settings.shortBreakDurationMinutes} min`;
   const plannedLongBreakLabel = `${settings.longBreakDurationMinutes} min`;
   const focusCycleProgress = `${cycleState.focusSessionsCompletedInCycle}/${settings.cyclesBeforeLongBreak}`;
-  const studiedMinutes = Math.floor(totalFocusStudySeconds / 60);
+  const persistedCompletedFocusSessionsCount = dashboardProgress.data?.metrics.completedFocusSessionsCount;
+  const persistedTotalFocusTimeMinutes = dashboardProgress.data?.metrics.totalFocusTimeMinutes;
+  const displayedCompletedFocusSessionsCount = persistedCompletedFocusSessionsCount ?? completedFocusSessionsCount;
+  const displayedStudiedMinutes = persistedTotalFocusTimeMinutes ?? Math.floor(totalFocusStudySeconds / 60);
   const latestWalletTransaction = walletTransactions[0];
 
   return (
@@ -243,8 +252,8 @@ const PomodoroPage: React.FC = () => {
               <Chip label={`Próximo modo: ${cycleState.nextMode.replace('_', ' ')}`} variant="outlined" />
               <Chip label={`Ciclo: ${settings.cyclesBeforeLongBreak} focos por pausa longa`} variant="outlined" />
               <Chip label={`Focos no ciclo: ${focusCycleProgress}`} variant="outlined" />
-              <Chip label={`Focos concluidos validos: ${completedFocusSessionsCount}`} variant="outlined" />
-              <Chip label={`Tempo total estudado: ${studiedMinutes} min`} variant="outlined" />
+              <Chip label={`Focos concluidos validos: ${displayedCompletedFocusSessionsCount}`} variant="outlined" />
+              <Chip label={`Tempo total estudado: ${displayedStudiedMinutes} min`} variant="outlined" />
               <Chip label={walletLoading ? 'Carteira: carregando...' : `Carteira: ${walletBalance} moedas`} color="success" variant="outlined" />
             </Stack>
           </Box>

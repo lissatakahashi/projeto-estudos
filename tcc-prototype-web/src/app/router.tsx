@@ -6,6 +6,7 @@ import ForgotPasswordPage from '../pages/Auth/ForgotPasswordPage';
 import LoginPage from '../pages/Auth/LoginPage';
 import RegisterPage from '../pages/Auth/RegisterPage';
 import ResetPasswordPage from '../pages/Auth/ResetPasswordPage';
+import DashboardPage from '../pages/Dashboard/DashboardPage';
 import EnvironmentPage from '../pages/Environment/EnvironmentPage';
 import HomePage from '../pages/Home/HomePage';
 import InventoryPage from '../pages/Inventory/InventoryPage';
@@ -50,7 +51,8 @@ const Router: React.FC = () => (
       <Route path="/inventory" element={<InventoryPage />} />
       <Route path="/environment" element={<EnvironmentPage />} />
       <Route path="/pet" element={<PetPage />} />
-      <Route path="/history" element={<div>History (placeholder)</div>} />
+      <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/history" element={<DashboardPage />} />
       <Route path="/settings" element={<div>Settings (placeholder)</div>} />
       <Route path="/privacy" element={<div>Privacy (placeholder)</div>} />
       <Route path="/terms" element={<div>Terms (placeholder)</div>} />
