@@ -28,7 +28,7 @@ test.describe('Shop to Inventory E2E', () => {
 
     await buyButton.click();
 
-    await expect(page.getByText(/Item adicionado ao inventario/i)).toBeVisible();
+    await expect(page.getByText(/Compra concluida|Novo recurso desbloqueado/i)).toBeVisible();
 
     await page.goto('/inventory');
 

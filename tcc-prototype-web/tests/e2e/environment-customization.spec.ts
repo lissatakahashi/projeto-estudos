@@ -40,7 +40,7 @@ test.describe('Environment Customization E2E', () => {
 
     await equipButton.click();
 
-    await expect(page.getByText(/Slot atualizado com sucesso/i)).toBeVisible();
+    await expect(page.getByText(/equipado|Ambiente atualizado/i)).toBeVisible();
 
     await page.reload();
 

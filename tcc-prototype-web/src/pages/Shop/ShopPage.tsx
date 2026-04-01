@@ -38,12 +38,10 @@ const ShopPage: React.FC = () => {
   const loadingCatalog = useShopStore((s) => s.loadingCatalog);
   const loadingInventory = useShopStore((s) => s.loadingInventory);
   const pendingPurchaseByItemId = useShopStore((s) => s.pendingPurchaseByItemId);
-  const feedback = useShopStore((s) => s.feedback);
   const error = useShopStore((s) => s.error);
   const loadCatalog = useShopStore((s) => s.loadCatalog);
   const loadInventory = useShopStore((s) => s.loadInventory);
   const purchaseItem = useShopStore((s) => s.purchaseItem);
-  const clearFeedback = useShopStore((s) => s.clearFeedback);
   const isOwned = useShopStore((s) => s.isOwned);
 
   const walletBalance = useWalletStore((s) => s.balance);
@@ -91,12 +89,6 @@ const ShopPage: React.FC = () => {
             <Button component={RouterLink} to="/login" size="small">
               Entrar agora
             </Button>
-          </Alert>
-        )}
-
-        {feedback && (
-          <Alert severity={feedback.severity} onClose={clearFeedback}>
-            {feedback.message}
           </Alert>
         )}
 

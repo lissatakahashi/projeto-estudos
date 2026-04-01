@@ -1,9 +1,11 @@
 import create from 'zustand';
+import { resolveFeedbackMessage } from '../domain/feedback/catalog';
 import { FEED_PET_COST_POLICY, derivePetMoodState, type FeedPetResult, type UserPetState } from '../domain/pet/types/pet';
 import { feedPet } from '../domain/pet/usecases/feedPet';
 import { fetchUserPetState } from '../domain/pet/usecases/fetchUserPetState';
 import { supabase } from '../lib/supabase/client';
 import { feedUserPet, getOrCreateUserPetState } from '../lib/supabase/petService';
+import { useMotivationalFeedbackStore } from './useMotivationalFeedbackStore';
 import { useWalletStore } from './useWalletStore';
 
 type PetFeedback = {
@@ -108,11 +110,17 @@ export const usePetStore = create<PetState>((set, get) => ({
       void useWalletStore.getState().loadWallet();
 
       const mood = result.pet ? derivePetMoodState(result.pet) : 'neutral';
+      const motivational = resolveFeedbackMessage('pet_fed', {
+        petMood: mood,
+      });
+      useMotivationalFeedbackStore.getState().publish(motivational, {
+        dedupeKey: `pet_fed:${result.fedAt ?? Date.now().toString()}`,
+      });
 
       set({
         feedback: {
           severity: 'success',
-          message: `Pet alimentado com sucesso. Humor atual: ${mood}.`,
+          message: motivational.message,
         },
       });
 

@@ -16,10 +16,11 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { useDashboardProgress } from '../../hooks/useDashboardProgress';
 import { useAuthSession } from '../../lib/supabase/hooks';
+import { useMotivationalFeedbackStore } from '../../state/useMotivationalFeedbackStore';
 
 function formatSessionStatus(status: string): string {
   if (status === 'completed') return 'Concluída';
@@ -49,6 +50,33 @@ const DashboardPage: React.FC = () => {
   const session = useAuthSession();
   const userId = session?.user?.id ?? null;
   const { data, loading, error, refresh } = useDashboardProgress(userId);
+  const publishEvent = useMotivationalFeedbackStore((s) => s.publishEvent);
+  const hasSentEmptyFeedbackRef = useRef(false);
+  const hasSentFirstAchievementRef = useRef(false);
+
+  useEffect(() => {
+    if (!data) {
+      return;
+    }
+
+    if (data.isEmpty && !hasSentEmptyFeedbackRef.current) {
+      publishEvent('dashboard_empty', {}, { dedupeKey: `dashboard_empty:${userId ?? 'anonymous'}` });
+      hasSentEmptyFeedbackRef.current = true;
+    }
+
+    if (!data.isEmpty) {
+      hasSentEmptyFeedbackRef.current = false;
+    }
+
+    if (data.metrics.completedFocusSessionsCount >= 1 && !hasSentFirstAchievementRef.current) {
+      publishEvent(
+        'first_achievement_unlocked',
+        { achievementLabel: 'Primeira sessao de foco concluida' },
+        { dedupeKey: `first_achievement:${userId ?? 'anonymous'}` },
+      );
+      hasSentFirstAchievementRef.current = true;
+    }
+  }, [data, publishEvent, userId]);
 
   if (!userId) {
     return (
@@ -122,6 +150,12 @@ const DashboardPage: React.FC = () => {
         {data.isEmpty && (
           <Alert severity="info">
             Complete sua primeira sessão para começar a acompanhar seu progresso.
+          </Alert>
+        )}
+
+        {!data.isEmpty && data.metrics.completedFocusSessionsCount === 1 && (
+          <Alert severity="success">
+            Primeira conquista registrada: sua primeira sessao de foco concluida.
           </Alert>
         )}
 

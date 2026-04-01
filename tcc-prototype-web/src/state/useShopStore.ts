@@ -1,19 +1,21 @@
 import create from 'zustand';
+import { resolveFeedbackMessage } from '../domain/feedback/catalog';
 import type {
-  InventoryCollectionStatus,
-  InventoryItem,
-  ShopItem,
-  ShopPurchaseResult,
+    InventoryCollectionStatus,
+    InventoryItem,
+    ShopItem,
+    ShopPurchaseResult,
 } from '../domain/shop/types/shop';
 import { fetchActiveShopCatalog } from '../domain/shop/usecases/fetchActiveShopCatalog';
 import { fetchUserInventory } from '../domain/shop/usecases/fetchUserInventory';
 import { purchaseShopItem } from '../domain/shop/usecases/purchaseShopItem';
 import { supabase } from '../lib/supabase/client';
 import {
-  listActiveShopItems,
-  listUserInventory,
-  purchaseShopItem as purchaseShopItemService,
+    listActiveShopItems,
+    listUserInventory,
+    purchaseShopItem as purchaseShopItemService,
 } from '../lib/supabase/shopService';
+import { useMotivationalFeedbackStore } from './useMotivationalFeedbackStore';
 import { useWalletStore } from './useWalletStore';
 
 type ShopFeedback = {
@@ -159,10 +161,18 @@ export const useShopStore = create<ShopState>((set, get) => ({
       void useWalletStore.getState().loadWallet();
       void get().loadInventory();
 
+      const purchasedItem = get().items.find((item) => item.itemId === itemId) ?? null;
+      const motivational = resolveFeedbackMessage('shop_item_purchased', {
+        itemName: purchasedItem?.name,
+      });
+      useMotivationalFeedbackStore.getState().publish(motivational, {
+        dedupeKey: `shop_item_purchased:${itemId}`,
+      });
+
       set({
         feedback: {
           severity: 'success',
-          message: 'Compra concluida com sucesso. Item adicionado ao inventario.',
+          message: motivational.message,
         },
       });
 

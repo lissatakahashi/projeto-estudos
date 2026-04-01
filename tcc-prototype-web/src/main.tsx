@@ -1,12 +1,13 @@
+import CssBaseline from '@mui/material/CssBaseline';
+import { ThemeProvider } from '@mui/material/styles';
 import React from 'react';
-import './styles/index.css';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import Router from './app/router';
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import { createAppTheme } from './theme';
+import GlobalMotivationalFeedback from './components/feedback/GlobalMotivationalFeedback';
 import { ThemeModeContext } from './contexts/ThemeModeContext';
+import './styles/index.css';
+import { createAppTheme } from './theme';
 
 if (process.env.NODE_ENV === 'development') {
   import('@axe-core/react').then(({ default: ReactAxe }) => {
@@ -81,6 +82,7 @@ function App() {
         <CssBaseline />
         <BrowserRouter>
           <Router />
+          <GlobalMotivationalFeedback />
         </BrowserRouter>
       </ThemeProvider>
     </ThemeModeContext.Provider>

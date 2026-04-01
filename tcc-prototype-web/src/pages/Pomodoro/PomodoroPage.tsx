@@ -1,30 +1,30 @@
 import {
-  Alert,
-  Box,
-  Button,
-  Chip,
-  CircularProgress,
-  Container,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
+    Alert,
+    Box,
+    Button,
+    Chip,
+    CircularProgress,
+    Container,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Paper,
+    Stack,
+    TextField,
+    Typography,
 } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { DEFAULT_POMODORO_SETTINGS } from '../../domain/pomodoro/constants/pomodoroSettings';
 import { getPomodoroInvalidationReasonLabel } from '../../domain/pomodoro/types/PomodoroInvalidation';
 import type {
-  PomodoroSettingsDraft,
-  PomodoroSettingsErrors,
+    PomodoroSettingsDraft,
+    PomodoroSettingsErrors,
 } from '../../domain/pomodoro/types/PomodoroSettings';
 import { settingsToDraft } from '../../domain/pomodoro/types/PomodoroSettings';
 import {
-  normalizeSettingsDraftValue,
-  validatePomodoroSettingsDraft,
+    normalizeSettingsDraftValue,
+    validatePomodoroSettingsDraft,
 } from '../../domain/pomodoro/validation/pomodoroSettingsValidation';
 import { useDashboardProgress } from '../../hooks/useDashboardProgress';
 import { useAuthSession } from '../../lib/supabase/hooks';
@@ -53,7 +53,6 @@ const PomodoroPage: React.FC = () => {
   const settingsSaving = usePomodoroStore((s) => s.settingsSaving);
   const settingsError = usePomodoroStore((s) => s.settingsError);
   const settingsSuccessMessage = usePomodoroStore((s) => s.settingsSuccessMessage);
-  const completionFeedback = usePomodoroStore((s) => s.completionFeedback);
   const completedFocusSessionsCount = usePomodoroStore((s) => s.completedFocusSessionsCount);
   const totalFocusStudySeconds = usePomodoroStore((s) => s.totalFocusStudySeconds);
   const startError = usePomodoroStore((s) => s.startError);
@@ -67,7 +66,6 @@ const PomodoroPage: React.FC = () => {
   const load = usePomodoroStore((s) => s.loadFromStorage);
   const loadSettings = usePomodoroStore((s) => s.loadSettings);
   const saveSettings = usePomodoroStore((s) => s.saveSettings);
-  const clearCompletionFeedback = usePomodoroStore((s) => s.clearCompletionFeedback);
   const clearSettingsFeedback = usePomodoroStore((s) => s.clearSettingsFeedback);
   const clearStartError = usePomodoroStore((s) => s.clearStartError);
   const clearExpiredSession = usePomodoroStore((s) => s.clearExpiredSession);
@@ -228,11 +226,6 @@ const PomodoroPage: React.FC = () => {
 
           {settingsError && <Alert severity="warning">{settingsError}</Alert>}
           {settingsSuccessMessage && <Alert severity="success">{settingsSuccessMessage}</Alert>}
-          {completionFeedback && (
-            <Alert severity={completionFeedback.severity} onClose={clearCompletionFeedback}>
-              {completionFeedback.message}
-            </Alert>
-          )}
           {startError && <Alert severity="error" onClose={clearStartError}>{startError}</Alert>}
 
           <Box aria-live="polite">

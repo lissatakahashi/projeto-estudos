@@ -21,10 +21,8 @@ const PetStatusCard: React.FC<PetStatusCardProps> = ({ compact = false }) => {
   const pet = usePetStore((s) => s.pet);
   const loading = usePetStore((s) => s.loading);
   const feeding = usePetStore((s) => s.feeding);
-  const feedback = usePetStore((s) => s.feedback);
   const error = usePetStore((s) => s.error);
   const feedPet = usePetStore((s) => s.feedPet);
-  const clearFeedback = usePetStore((s) => s.clearFeedback);
 
   const mood = pet ? derivePetMoodState(pet) : 'neutral';
   const visual = getPetVisualByMood(mood);
@@ -41,12 +39,6 @@ const PetStatusCard: React.FC<PetStatusCardProps> = ({ compact = false }) => {
               Alimente o pet para manter o estado de cuidado ativo no seu progresso de estudo.
             </Typography>
           </Box>
-
-          {feedback && (
-            <Alert severity={feedback.severity} onClose={clearFeedback}>
-              {feedback.message}
-            </Alert>
-          )}
 
           {error && <Alert severity="error">{error}</Alert>}
 

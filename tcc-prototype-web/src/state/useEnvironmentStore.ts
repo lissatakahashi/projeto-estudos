@@ -1,7 +1,8 @@
 import create from 'zustand';
 import {
-    ENVIRONMENT_SLOTS,
     createEmptyEnvironmentConfiguration,
+    ENVIRONMENT_SLOT_DEFINITIONS,
+    ENVIRONMENT_SLOTS,
     isInventoryItemCompatibleWithSlot,
     type EnvironmentCollectionStatus,
     type EnvironmentSlotName,
@@ -10,8 +11,10 @@ import {
 } from '../domain/environment/types/environment';
 import { equipEnvironmentItem } from '../domain/environment/usecases/equipEnvironmentItem';
 import { fetchUserEnvironment } from '../domain/environment/usecases/fetchUserEnvironment';
+import { resolveFeedbackMessage } from '../domain/feedback/catalog';
 import { supabase } from '../lib/supabase/client';
 import { equipEnvironmentItemRpc, listUserEnvironmentItems } from '../lib/supabase/environmentService';
+import { useMotivationalFeedbackStore } from './useMotivationalFeedbackStore';
 import { useShopStore } from './useShopStore';
 
 type EnvironmentFeedback = {
@@ -187,10 +190,20 @@ export const useEnvironmentStore = create<EnvironmentState>((set, get) => ({
 
     if (result.success) {
       void get().loadEnvironment();
+
+      const slotLabel = ENVIRONMENT_SLOT_DEFINITIONS.find((slot) => slot.slotName === slotName)?.label ?? slotName;
+      const motivational = resolveFeedbackMessage('environment_item_equipped', {
+        itemName: inventoryEntry.item.name,
+        slotLabel,
+      });
+      useMotivationalFeedbackStore.getState().publish(motivational, {
+        dedupeKey: `environment_item_equipped:${slotName}:${inventoryEntryId}`,
+      });
+
       set({
         feedback: {
           severity: 'success',
-          message: 'Slot atualizado com sucesso.',
+          message: motivational.message,
         },
       });
       return result;

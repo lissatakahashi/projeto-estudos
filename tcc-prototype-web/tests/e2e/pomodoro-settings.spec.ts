@@ -30,7 +30,19 @@ test.describe('Pomodoro settings flow', () => {
 
     await page.getByRole('button', { name: /Iniciar sessao/i }).click();
     await expect(page.getByText(/Modo atual: focus/i)).toBeVisible();
+    await expect(page.getByText(/Sessao concluida com sucesso|Bloco de foco finalizado/i)).toBeVisible({ timeout: 70000 });
 
     await expect(page.getByText(/Modo atual: short break/i)).toBeVisible({ timeout: 70000 });
+  });
+
+  test('invalidates active focus session when leaving pomodoro route', async ({ page }) => {
+    await page.goto('/pomodoro');
+
+    await page.getByRole('button', { name: /Iniciar sessao/i }).click();
+    await expect(page.getByText(/Modo atual: focus/i)).toBeVisible();
+
+    await page.goto('/dashboard');
+
+    await expect(page.getByText(/progresso nao foi contabilizado|sessao foi invalidada/i)).toBeVisible();
   });
 });

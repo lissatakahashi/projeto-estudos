@@ -1,5 +1,7 @@
 import create from 'zustand';
 import { awardFocusSessionCoins } from '../domain/economy/usecases/awardFocusSessionCoins';
+import { resolveFeedbackMessage } from '../domain/feedback/catalog';
+import type { FeedbackVariant } from '../domain/feedback/types';
 import { DEFAULT_POMODORO_SETTINGS } from '../domain/pomodoro/constants/pomodoroSettings';
 import { Pomodoro, PomodoroCycleState, PomodoroHistoryItem } from '../domain/pomodoro/types';
 import {
@@ -36,6 +38,7 @@ import {
     upsertUserPomodoroSettings,
 } from '../lib/supabase/pomodoroSettingsService';
 import { awardFocusSessionReward } from '../lib/supabase/walletService';
+import { useMotivationalFeedbackStore } from './useMotivationalFeedbackStore';
 import { useWalletStore } from './useWalletStore';
 
 import { supabase } from '../lib/supabase/client';
@@ -140,9 +143,11 @@ function getRemainingFromEndsAt(phaseEndsAtEpochMs: number): number {
   return Math.max(0, diff);
 }
 
-function getInvalidationFeedbackMessage(reason?: PomodoroInvalidationReason): string {
-  const label = getPomodoroInvalidationReasonLabel(reason);
-  return `Sessão interrompida por ${label}. O progresso não foi contabilizado.`;
+function mapVariantToPomodoroSeverity(variant: FeedbackVariant): PomodoroCompletionFeedback['severity'] {
+  if (variant === 'warning') return 'warning';
+  if (variant === 'info') return 'info';
+  if (variant === 'error') return 'warning';
+  return 'success';
 }
 
 function hydrateCycleState(parsed: { cycleState?: PomodoroCycleState; pomodoro?: Pomodoro | null }, settings: PomodoroSettings): PomodoroCycleState {
@@ -237,6 +242,13 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
       startError: null,
       completionFeedback: null,
     });
+
+    useMotivationalFeedbackStore.getState().publishEvent(
+      'pomodoro_started',
+      {},
+      { dedupeKey: `pomodoro_started:${p.pomodoroId}` },
+    );
+
     saveToStorage({
       pomodoro: p,
       cycleState,
@@ -391,14 +403,27 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
         if (completionResolution.shouldCountAsCompletedFocus) {
           completedFocusSessionsCount += 1;
           totalFocusStudySeconds += completionResolution.actualDurationSeconds;
+          const motivational = resolveFeedbackMessage('pomodoro_completed', {}, completionSourceId);
+          useMotivationalFeedbackStore.getState().publish(motivational, {
+            dedupeKey: `pomodoro_completed:${completionSourceId}`,
+          });
           completionFeedback = {
-            severity: 'success',
-            message: 'Sessao concluida com sucesso. Bloco de foco finalizado.',
+            severity: mapVariantToPomodoroSeverity(motivational.variant),
+            message: motivational.message,
           };
         } else if (completionResolution.status === 'invalidated') {
+          const invalidReasonLabel = getPomodoroInvalidationReasonLabel(p.invalidReason);
+          const motivational = resolveFeedbackMessage(
+            'pomodoro_invalidated',
+            { invalidReasonLabel },
+            `${completionSourceId}:${p.invalidReason ?? 'invalidated'}`,
+          );
+          useMotivationalFeedbackStore.getState().publish(motivational, {
+            dedupeKey: `pomodoro_invalidated:${completionSourceId}`,
+          });
           completionFeedback = {
-            severity: 'warning',
-            message: getInvalidationFeedbackMessage(p.invalidReason),
+            severity: mapVariantToPomodoroSeverity(motivational.variant),
+            message: motivational.message,
           };
         } else {
           completionFeedback = {
@@ -494,10 +519,20 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
           if (rewardResult.awarded) {
             useWalletStore.getState().setBalance(rewardResult.newBalance);
             void useWalletStore.getState().loadWallet();
+
+            const coinsFeedback = resolveFeedbackMessage(
+              'coins_earned',
+              { coins: rewardResult.awardedAmount },
+              sessionRow.sessionId,
+            );
+            useMotivationalFeedbackStore.getState().publish(coinsFeedback, {
+              dedupeKey: `coins_earned:${sessionRow.sessionId}`,
+            });
+
             set({
               completionFeedback: {
-                severity: 'success',
-                message: `Sessao concluida com sucesso. Voce ganhou ${rewardResult.awardedAmount} moedas.`,
+                severity: mapVariantToPomodoroSeverity(coinsFeedback.variant),
+                message: coinsFeedback.message,
               },
             });
           } else if (rewardResult.reason === 'integrity_error') {

@@ -1,21 +1,21 @@
 import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  CircularProgress,
-  Container,
-  Stack,
-  Typography,
+    Alert,
+    Box,
+    Button,
+    Card,
+    CardContent,
+    Chip,
+    CircularProgress,
+    Container,
+    Stack,
+    Typography,
 } from '@mui/material';
 import React, { useEffect, useMemo } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import PetStatusCard from '../../components/pet/PetStatusCard';
 import {
-  ENVIRONMENT_SLOT_DEFINITIONS,
-  type EnvironmentSlotName,
+    ENVIRONMENT_SLOT_DEFINITIONS,
+    type EnvironmentSlotName,
 } from '../../domain/environment/types/environment';
 import { getCompatibleInventoryItemsBySlot } from '../../domain/environment/usecases/getCompatibleInventoryItemsBySlot';
 import { useEnvironmentStore } from '../../state/useEnvironmentStore';
@@ -44,13 +44,11 @@ const EnvironmentPage: React.FC = () => {
   const loadingEnvironment = useEnvironmentStore((s) => s.loading);
   const selectedSlot = useEnvironmentStore((s) => s.selectedSlot);
   const pendingBySlot = useEnvironmentStore((s) => s.pendingBySlot);
-  const feedback = useEnvironmentStore((s) => s.feedback);
   const error = useEnvironmentStore((s) => s.error);
   const setSelectedSlot = useEnvironmentStore((s) => s.setSelectedSlot);
   const loadEnvironment = useEnvironmentStore((s) => s.loadEnvironment);
   const equipSlotWithInventoryItem = useEnvironmentStore((s) => s.equipSlotWithInventoryItem);
   const clearSlot = useEnvironmentStore((s) => s.clearSlot);
-  const clearFeedback = useEnvironmentStore((s) => s.clearFeedback);
 
   useEffect(() => {
     if (userId) {
@@ -96,12 +94,6 @@ const EnvironmentPage: React.FC = () => {
             <Typography component={RouterLink} to="/login" sx={{ ml: 1, fontWeight: 600 }}>
               Ir para login
             </Typography>
-          </Alert>
-        )}
-
-        {feedback && (
-          <Alert severity={feedback.severity} onClose={clearFeedback}>
-            {feedback.message}
           </Alert>
         )}
 
