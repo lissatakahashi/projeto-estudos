@@ -14,6 +14,7 @@ import { fetchUserEnvironment } from '../domain/environment/usecases/fetchUserEn
 import { resolveFeedbackMessage } from '../domain/feedback/catalog';
 import { supabase } from '../lib/supabase/client';
 import { equipEnvironmentItemRpc, listUserEnvironmentItems } from '../lib/supabase/environmentService';
+import { useBadgeStore } from './useBadgeStore';
 import { useMotivationalFeedbackStore } from './useMotivationalFeedbackStore';
 import { useShopStore } from './useShopStore';
 
@@ -190,6 +191,7 @@ export const useEnvironmentStore = create<EnvironmentState>((set, get) => ({
 
     if (result.success) {
       void get().loadEnvironment();
+      void useBadgeStore.getState().evaluateAndGrantBadges('environment_item_equipped');
 
       const slotLabel = ENVIRONMENT_SLOT_DEFINITIONS.find((slot) => slot.slotName === slotName)?.label ?? slotName;
       const motivational = resolveFeedbackMessage('environment_item_equipped', {

@@ -5,6 +5,7 @@ export type MotivationalFeedbackEvent =
   | 'pomodoro_completed'
   | 'pomodoro_invalidated'
   | 'coins_earned'
+  | 'badge_unlocked'
   | 'shop_item_purchased'
   | 'environment_item_equipped'
   | 'pet_fed'
@@ -18,6 +19,7 @@ export type MotivationalFeedbackPayload = {
   petMood?: string;
   invalidReasonLabel?: string;
   achievementLabel?: string;
+  badgeName?: string;
 };
 
 export type ResolvedFeedbackMessage = {

@@ -406,6 +406,81 @@ export type Database = {
           }
         ]
       }
+      badges: {
+        Row: {
+          id: string
+          slug: string
+          name: string
+          description: string
+          category: string
+          icon: string
+          isActive: boolean
+          createdAt: string
+          updatedAt: string
+        }
+        Insert: {
+          id?: string
+          slug: string
+          name: string
+          description: string
+          category: string
+          icon: string
+          isActive?: boolean
+          createdAt?: string
+          updatedAt?: string
+        }
+        Update: {
+          id?: string
+          slug?: string
+          name?: string
+          description?: string
+          category?: string
+          icon?: string
+          isActive?: boolean
+          createdAt?: string
+          updatedAt?: string
+        }
+        Relationships: []
+      }
+      userBadges: {
+        Row: {
+          id: string
+          userId: string
+          badgeId: string
+          earnedAt: string
+          createdAt: string
+        }
+        Insert: {
+          id?: string
+          userId: string
+          badgeId: string
+          earnedAt?: string
+          createdAt?: string
+        }
+        Update: {
+          id?: string
+          userId?: string
+          badgeId?: string
+          earnedAt?: string
+          createdAt?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "userBadges_userId_fkey"
+            columns: ["userId"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "userBadges_badgeId_fkey"
+            columns: ["badgeId"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       wallets: {
         Row: {
           walletId: string
@@ -588,6 +663,12 @@ export type UserEnvironmentSlotsUpdate = Database['public']['Tables']['userEnvir
 export type UserPetStatesRow = Database['public']['Tables']['userPetStates']['Row'];
 export type UserPetStatesInsert = Database['public']['Tables']['userPetStates']['Insert'];
 export type UserPetStatesUpdate = Database['public']['Tables']['userPetStates']['Update'];
+export type BadgeRow = Database['public']['Tables']['badges']['Row'];
+export type BadgeInsert = Database['public']['Tables']['badges']['Insert'];
+export type BadgeUpdate = Database['public']['Tables']['badges']['Update'];
+export type UserBadgeRow = Database['public']['Tables']['userBadges']['Row'];
+export type UserBadgeInsert = Database['public']['Tables']['userBadges']['Insert'];
+export type UserBadgeUpdate = Database['public']['Tables']['userBadges']['Update'];
 export type WalletRow = Database['public']['Tables']['wallets']['Row'];
 export type WalletInsert = Database['public']['Tables']['wallets']['Insert'];
 export type WalletUpdate = Database['public']['Tables']['wallets']['Update'];

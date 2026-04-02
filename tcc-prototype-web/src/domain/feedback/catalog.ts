@@ -1,8 +1,8 @@
 import type {
-    FeedbackVariant,
-    MotivationalFeedbackEvent,
-    MotivationalFeedbackPayload,
-    ResolvedFeedbackMessage,
+  FeedbackVariant,
+  MotivationalFeedbackEvent,
+  MotivationalFeedbackPayload,
+  ResolvedFeedbackMessage,
 } from './types';
 
 type CatalogEntry = {
@@ -42,6 +42,14 @@ const feedbackCatalog: Record<MotivationalFeedbackEvent, CatalogEntry> = {
     templates: [
       (payload) => `Recompensa recebida: +${payload.coins ?? 0} moedas pelo seu foco.`,
       (payload) => `Você ganhou ${payload.coins ?? 0} moeda(s). Continue no ritmo de estudo.`,
+    ],
+  },
+  badge_unlocked: {
+    variant: 'success',
+    durationMs: 5200,
+    templates: [
+      (payload) => `Nova conquista desbloqueada: ${payload.badgeName ?? 'Badge especial'}.`,
+      (payload) => `Você ganhou a badge ${payload.badgeName ?? 'especial'}. Continue evoluindo.`,
     ],
   },
   shop_item_purchased: {

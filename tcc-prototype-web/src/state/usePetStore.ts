@@ -5,6 +5,7 @@ import { feedPet } from '../domain/pet/usecases/feedPet';
 import { fetchUserPetState } from '../domain/pet/usecases/fetchUserPetState';
 import { supabase } from '../lib/supabase/client';
 import { feedUserPet, getOrCreateUserPetState } from '../lib/supabase/petService';
+import { useBadgeStore } from './useBadgeStore';
 import { useMotivationalFeedbackStore } from './useMotivationalFeedbackStore';
 import { useWalletStore } from './useWalletStore';
 
@@ -108,6 +109,7 @@ export const usePetStore = create<PetState>((set, get) => ({
     if (result.success) {
       useWalletStore.getState().setBalance(result.newBalance);
       void useWalletStore.getState().loadWallet();
+      void useBadgeStore.getState().evaluateAndGrantBadges('pet_fed');
 
       const mood = result.pet ? derivePetMoodState(result.pet) : 'neutral';
       const motivational = resolveFeedbackMessage('pet_fed', {

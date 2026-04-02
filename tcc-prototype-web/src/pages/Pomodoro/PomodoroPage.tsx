@@ -320,17 +320,17 @@ const PomodoroPage: React.FC = () => {
           <Typography variant="body2" color="text.secondary" aria-live="polite">
             {pomodoro
               ? pomodoro.isValid
-                ? 'Sessao valida em andamento.'
+                ? 'Sessão válida em andamento.'
                 : `Sessao invalida: ${getPomodoroInvalidationReasonLabel(pomodoro.invalidReason)}`
               : 'Sem sessão ativa no momento.'}
           </Typography>
 
           <Typography variant="caption" color="text.secondary">
-            Se a sessao de foco for abandonada (cancelamento, troca de rota, recarregamento, fechamento ou aba oculta por tempo excessivo), ela e invalidada e nao conta progresso.
+            Se a sessão de foco for abandonada (cancelamento, troca de rota, recarregamento, fechamento ou aba oculta por tempo excessivo), ela é invalidada e não conta progresso.
           </Typography>
 
           <Typography variant="caption" color="text.secondary">
-            Avancar fase foi habilitado por design para testes e acessibilidade operacional, incluindo pulo de pausas quando necessario.
+            Avançar fase foi habilitado por design para testes e acessibilidade operacional, incluindo pulo de pausas quando necessário.
           </Typography>
 
           {latestWalletTransaction && (

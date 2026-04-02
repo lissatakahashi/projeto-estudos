@@ -8,6 +8,7 @@ const {
   purchaseShopItemMock,
   walletSetBalanceMock,
   walletLoadWalletMock,
+  evaluateAndGrantBadgesMock,
 } = vi.hoisted(() => {
   const onAuthStateChange = vi.fn(() => ({
     data: {
@@ -24,6 +25,7 @@ const {
 
   const setBalance = vi.fn();
   const loadWallet = vi.fn();
+  const evaluateAndGrantBadges = vi.fn();
 
   return {
     onAuthStateChangeMock: onAuthStateChange,
@@ -33,6 +35,7 @@ const {
     purchaseShopItemMock: purchaseShopItem,
     walletSetBalanceMock: setBalance,
     walletLoadWalletMock: loadWallet,
+    evaluateAndGrantBadgesMock: evaluateAndGrantBadges,
   };
 });
 
@@ -60,6 +63,14 @@ vi.mock('./useWalletStore', () => ({
   },
 }));
 
+vi.mock('./useBadgeStore', () => ({
+  useBadgeStore: {
+    getState: () => ({
+      evaluateAndGrantBadges: evaluateAndGrantBadgesMock,
+    }),
+  },
+}));
+
 import { useShopStore } from './useShopStore';
 
 describe('useShopStore', () => {
@@ -69,6 +80,7 @@ describe('useShopStore', () => {
     listUserInventoryMock.mockClear();
     walletSetBalanceMock.mockClear();
     walletLoadWalletMock.mockClear();
+    evaluateAndGrantBadgesMock.mockClear();
 
     useShopStore.setState({
       userId: 'user-1',
@@ -112,6 +124,7 @@ describe('useShopStore', () => {
     expect(result.purchased).toBe(true);
     expect(walletSetBalanceMock).toHaveBeenCalledWith(77);
     expect(walletLoadWalletMock).toHaveBeenCalledTimes(1);
+    expect(evaluateAndGrantBadgesMock).toHaveBeenCalledWith('shop_item_purchased');
     expect(listUserInventoryMock).toHaveBeenCalledWith('user-1');
     expect(useShopStore.getState().feedback?.severity).toBe('success');
     expect(useShopStore.getState().pendingPurchaseByItemId['item-2']).toBeUndefined();

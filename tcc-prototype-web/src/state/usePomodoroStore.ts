@@ -38,6 +38,7 @@ import {
     upsertUserPomodoroSettings,
 } from '../lib/supabase/pomodoroSettingsService';
 import { awardFocusSessionReward } from '../lib/supabase/walletService';
+import { useBadgeStore } from './useBadgeStore';
 import { useMotivationalFeedbackStore } from './useMotivationalFeedbackStore';
 import { useWalletStore } from './useWalletStore';
 
@@ -505,6 +506,10 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
         });
 
         if (sessionRow) {
+          if (completionResolution.status === 'completed') {
+            void useBadgeStore.getState().evaluateAndGrantBadges('focus_session_completed');
+          }
+
           const rewardResult = await awardFocusSessionCoins(
             { awardFocusSessionReward },
             {
@@ -817,7 +822,7 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
         settingsSuccessMessage:
           s.pomodoro && s.pomodoro.status !== 'finished'
             ? 'Configuração salva. A sessão atual foi mantida e as novas durações valem para as próximas sessões.'
-            : 'Configuracao salva com sucesso.',
+            : 'Configuração salva com sucesso.',
       });
       return true;
     }

@@ -15,6 +15,7 @@ import {
     listUserInventory,
     purchaseShopItem as purchaseShopItemService,
 } from '../lib/supabase/shopService';
+import { useBadgeStore } from './useBadgeStore';
 import { useMotivationalFeedbackStore } from './useMotivationalFeedbackStore';
 import { useWalletStore } from './useWalletStore';
 
@@ -160,6 +161,7 @@ export const useShopStore = create<ShopState>((set, get) => ({
       useWalletStore.getState().setBalance(result.newBalance);
       void useWalletStore.getState().loadWallet();
       void get().loadInventory();
+      void useBadgeStore.getState().evaluateAndGrantBadges('shop_item_purchased');
 
       const purchasedItem = get().items.find((item) => item.itemId === itemId) ?? null;
       const motivational = resolveFeedbackMessage('shop_item_purchased', {

@@ -8,7 +8,6 @@ import {
     CircularProgress,
     Container,
     Divider,
-    LinearProgress,
     List,
     ListItem,
     ListItemText,
@@ -18,8 +17,10 @@ import {
 } from '@mui/material';
 import React, { useEffect, useRef } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import BadgesPanel from '../../components/dashboard/BadgesPanel';
 import { useDashboardProgress } from '../../hooks/useDashboardProgress';
 import { useAuthSession } from '../../lib/supabase/hooks';
+import { useBadgeStore } from '../../state/useBadgeStore';
 import { useMotivationalFeedbackStore } from '../../state/useMotivationalFeedbackStore';
 
 function formatSessionStatus(status: string): string {
@@ -51,8 +52,10 @@ const DashboardPage: React.FC = () => {
   const userId = session?.user?.id ?? null;
   const { data, loading, error, refresh } = useDashboardProgress(userId);
   const publishEvent = useMotivationalFeedbackStore((s) => s.publishEvent);
+  const badges = useBadgeStore((s) => s.badges);
+  const userBadges = useBadgeStore((s) => s.userBadges);
+  const badgesLoading = useBadgeStore((s) => s.loading);
   const hasSentEmptyFeedbackRef = useRef(false);
-  const hasSentFirstAchievementRef = useRef(false);
 
   useEffect(() => {
     if (!data) {
@@ -66,15 +69,6 @@ const DashboardPage: React.FC = () => {
 
     if (!data.isEmpty) {
       hasSentEmptyFeedbackRef.current = false;
-    }
-
-    if (data.metrics.completedFocusSessionsCount >= 1 && !hasSentFirstAchievementRef.current) {
-      publishEvent(
-        'first_achievement_unlocked',
-        { achievementLabel: 'Primeira sessao de foco concluida' },
-        { dedupeKey: `first_achievement:${userId ?? 'anonymous'}` },
-      );
-      hasSentFirstAchievementRef.current = true;
     }
   }, [data, publishEvent, userId]);
 
@@ -133,7 +127,6 @@ const DashboardPage: React.FC = () => {
   }
 
   const weeklyCompletedSessions = data.recentProgress.reduce((sum, point) => sum + point.completedSessions, 0);
-  const weeklyProgressPercent = Math.min(100, Math.round((weeklyCompletedSessions / 7) * 100));
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
@@ -223,10 +216,11 @@ const DashboardPage: React.FC = () => {
               <Typography variant="body2" color="text.secondary">
                 Progresso dos últimos 7 dias: {weeklyCompletedSessions} sessão(ões) concluída(s)
               </Typography>
-              <LinearProgress value={weeklyProgressPercent} variant="determinate" sx={{ mt: 1, borderRadius: 99, height: 8 }} />
             </Box>
           </Stack>
         </Paper>
+
+        <BadgesPanel badges={badges} userBadges={userBadges} loading={badgesLoading} />
 
         <Box
           sx={{
