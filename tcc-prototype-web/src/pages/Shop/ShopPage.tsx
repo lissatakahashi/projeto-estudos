@@ -39,9 +39,11 @@ const ShopPage: React.FC = () => {
   const loadingInventory = useShopStore((s) => s.loadingInventory);
   const pendingPurchaseByItemId = useShopStore((s) => s.pendingPurchaseByItemId);
   const error = useShopStore((s) => s.error);
+  const feedback = useShopStore((s) => s.feedback);
   const loadCatalog = useShopStore((s) => s.loadCatalog);
   const loadInventory = useShopStore((s) => s.loadInventory);
   const purchaseItem = useShopStore((s) => s.purchaseItem);
+  const clearFeedback = useShopStore((s) => s.clearFeedback);
   const isOwned = useShopStore((s) => s.isOwned);
 
   const walletBalance = useWalletStore((s) => s.balance);
@@ -53,6 +55,12 @@ const ShopPage: React.FC = () => {
       void loadInventory();
     }
   }, [loadCatalog, loadInventory, userId]);
+
+  useEffect(() => {
+    return () => {
+      clearFeedback();
+    };
+  }, [clearFeedback]);
 
   const inventorySize = inventory.length;
 
@@ -93,8 +101,21 @@ const ShopPage: React.FC = () => {
         )}
 
         {error && (
-          <Alert severity="error">
+          <Alert
+            severity="error"
+            action={(
+              <Button color="inherit" size="small" onClick={() => { void loadCatalog(); }}>
+                Tentar novamente
+              </Button>
+            )}
+          >
             {error}
+          </Alert>
+        )}
+
+        {feedback && (
+          <Alert severity={feedback.severity} onClose={clearFeedback}>
+            {feedback.message}
           </Alert>
         )}
 
@@ -102,6 +123,24 @@ const ShopPage: React.FC = () => {
           <Box sx={{ py: 8, display: 'grid', placeItems: 'center' }}>
             <CircularProgress aria-label="Carregando catalogo da loja" />
           </Box>
+        ) : items.length === 0 ? (
+          <Card variant="outlined" sx={{ borderRadius: 3 }}>
+            <CardContent>
+              <Stack spacing={1.5}>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  Catálogo temporariamente vazio
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Nenhum item ativo foi encontrado no momento. Tente atualizar para recarregar os dados da loja.
+                </Typography>
+                <Box>
+                  <Button variant="contained" onClick={() => { void loadCatalog(); }}>
+                    Atualizar catálogo
+                  </Button>
+                </Box>
+              </Stack>
+            </CardContent>
+          </Card>
         ) : (
           <Box
             sx={{

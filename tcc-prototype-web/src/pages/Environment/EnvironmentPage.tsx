@@ -45,10 +45,12 @@ const EnvironmentPage: React.FC = () => {
   const selectedSlot = useEnvironmentStore((s) => s.selectedSlot);
   const pendingBySlot = useEnvironmentStore((s) => s.pendingBySlot);
   const error = useEnvironmentStore((s) => s.error);
+  const feedback = useEnvironmentStore((s) => s.feedback);
   const setSelectedSlot = useEnvironmentStore((s) => s.setSelectedSlot);
   const loadEnvironment = useEnvironmentStore((s) => s.loadEnvironment);
   const equipSlotWithInventoryItem = useEnvironmentStore((s) => s.equipSlotWithInventoryItem);
   const clearSlot = useEnvironmentStore((s) => s.clearSlot);
+  const clearFeedback = useEnvironmentStore((s) => s.clearFeedback);
 
   useEffect(() => {
     if (userId) {
@@ -56,6 +58,12 @@ const EnvironmentPage: React.FC = () => {
       void loadEnvironment();
     }
   }, [loadEnvironment, loadInventory, userId]);
+
+  useEffect(() => {
+    return () => {
+      clearFeedback();
+    };
+  }, [clearFeedback]);
 
   const inventoryByEntryId = useMemo(() => {
     return new Map(inventory.map((entry) => [entry.inventoryEntryId, entry]));
@@ -97,7 +105,31 @@ const EnvironmentPage: React.FC = () => {
           </Alert>
         )}
 
-        {error && <Alert severity="error">{error}</Alert>}
+        {error && (
+          <Alert
+            severity="error"
+            action={(
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => {
+                  void loadEnvironment();
+                  void loadInventory();
+                }}
+              >
+                Tentar novamente
+              </Button>
+            )}
+          >
+            {error}
+          </Alert>
+        )}
+
+        {feedback && (
+          <Alert severity={feedback.severity} onClose={clearFeedback}>
+            {feedback.message}
+          </Alert>
+        )}
 
         {userId && (loadingInventory || loadingEnvironment) && (
           <Box sx={{ py: 5, display: 'grid', placeItems: 'center' }}>

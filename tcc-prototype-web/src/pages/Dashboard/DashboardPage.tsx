@@ -141,7 +141,14 @@ const DashboardPage: React.FC = () => {
         </Box>
 
         {data.isEmpty && (
-          <Alert severity="info">
+          <Alert
+            severity="info"
+            action={(
+              <Button component={RouterLink} to="/pomodoro" color="inherit" size="small">
+                Iniciar primeira sessão
+              </Button>
+            )}
+          >
             Complete sua primeira sessão para começar a acompanhar seu progresso.
           </Alert>
         )}

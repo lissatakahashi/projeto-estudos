@@ -68,7 +68,7 @@ export function validateRegisterForm(values: RegisterFormValues): RegisterValida
   if (!birthDate) {
     errors.birthDate = 'Informe sua data de nascimento.';
   } else if (!isValidBirthDate(birthDate)) {
-    errors.birthDate = 'Informe uma data de nascimento valida e realista.';
+    errors.birthDate = 'Informe uma data de nascimento válida e realista.';
   }
 
   if (!email) {

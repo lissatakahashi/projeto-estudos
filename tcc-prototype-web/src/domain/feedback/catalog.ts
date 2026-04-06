@@ -56,7 +56,7 @@ const feedbackCatalog: Record<MotivationalFeedbackEvent, CatalogEntry> = {
     variant: 'success',
     durationMs: 3800,
     templates: [
-      (payload) => `Compra concluida: ${payload.itemName ?? 'item'} foi adicionado ao inventario.`,
+      (payload) => `Compra concluída: ${payload.itemName ?? 'item'} foi adicionado ao inventário.`,
       (payload) => `Novo recurso desbloqueado: ${payload.itemName ?? 'item'} agora esta no seu inventario.`,
     ],
   },

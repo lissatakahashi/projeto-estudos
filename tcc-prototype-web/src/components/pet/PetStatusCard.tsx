@@ -22,7 +22,10 @@ const PetStatusCard: React.FC<PetStatusCardProps> = ({ compact = false }) => {
   const loading = usePetStore((s) => s.loading);
   const feeding = usePetStore((s) => s.feeding);
   const error = usePetStore((s) => s.error);
+  const feedback = usePetStore((s) => s.feedback);
   const feedPet = usePetStore((s) => s.feedPet);
+  const loadPetState = usePetStore((s) => s.loadPetState);
+  const clearFeedback = usePetStore((s) => s.clearFeedback);
 
   const mood = pet ? derivePetMoodState(pet) : 'neutral';
   const visual = getPetVisualByMood(mood);
@@ -40,7 +43,24 @@ const PetStatusCard: React.FC<PetStatusCardProps> = ({ compact = false }) => {
             </Typography>
           </Box>
 
-          {error && <Alert severity="error">{error}</Alert>}
+          {error && (
+            <Alert
+              severity="error"
+              action={(
+                <Button color="inherit" size="small" onClick={() => { void loadPetState(); }}>
+                  Recarregar
+                </Button>
+              )}
+            >
+              {error}
+            </Alert>
+          )}
+
+          {feedback && (
+            <Alert severity={feedback.severity} onClose={clearFeedback}>
+              {feedback.message}
+            </Alert>
+          )}
 
           {!pet && loading && <LinearProgress aria-label="Carregando estado do pet" />}
 

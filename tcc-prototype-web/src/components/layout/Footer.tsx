@@ -1,11 +1,11 @@
-import React from 'react';
-import { Link as RouterLink } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import Link from '@mui/material/Link';
 import Divider from '@mui/material/Divider';
+import Grid from '@mui/material/Grid';
+import Link from '@mui/material/Link';
+import Typography from '@mui/material/Typography';
+import React from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 
 const year = new Date().getFullYear();
 
@@ -45,12 +45,12 @@ const Footer: React.FC = () => (
           <nav aria-label="Recursos">
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 8 }}>
               <li>
-                <Link component={RouterLink} to="/history" color="text.secondary">
+                <Link component={RouterLink} to="/dashboard" color="text.secondary">
                   Histórico
                 </Link>
               </li>
               <li>
-                <Link component={RouterLink} to="/badges" color="text.secondary">
+                <Link component={RouterLink} to="/dashboard" color="text.secondary">
                   Badges
                 </Link>
               </li>
@@ -70,7 +70,7 @@ const Footer: React.FC = () => (
                 </Link>
               </li>
               <li>
-                <Link component={RouterLink} to="/method" color="text.secondary">
+                <Link component={RouterLink} to="/metodologia" color="text.secondary">
                   Metodologia
                 </Link>
               </li>
@@ -85,7 +85,7 @@ const Footer: React.FC = () => (
           <nav aria-label="Legal">
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 8 }}>
               <li>
-                <Link component={RouterLink} to="/privacy" color="text.secondary">
+                <Link href="/politica-privacidade.html" color="text.secondary">
                   Privacidade
                 </Link>
               </li>
@@ -104,7 +104,7 @@ const Footer: React.FC = () => (
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'center', justifyContent: 'space-between', gap: 2, fontSize: 12, color: 'text.secondary' }}>
         <div>© {year} tcc-prototype. Todos os direitos reservados.</div>
         <Box sx={{ display: 'flex', gap: 3 }}>
-          <Link component={RouterLink} to="/privacy" color="text.secondary">
+          <Link href="/politica-privacidade.html" color="text.secondary">
             Política de Privacidade
           </Link>
           <Link component={RouterLink} to="/terms" color="text.secondary">

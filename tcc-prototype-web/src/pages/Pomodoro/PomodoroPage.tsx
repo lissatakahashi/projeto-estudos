@@ -1,30 +1,30 @@
 import {
-    Alert,
-    Box,
-    Button,
-    Chip,
-    CircularProgress,
-    Container,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    Paper,
-    Stack,
-    TextField,
-    Typography,
+  Alert,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
 } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { DEFAULT_POMODORO_SETTINGS } from '../../domain/pomodoro/constants/pomodoroSettings';
 import { getPomodoroInvalidationReasonLabel } from '../../domain/pomodoro/types/PomodoroInvalidation';
 import type {
-    PomodoroSettingsDraft,
-    PomodoroSettingsErrors,
+  PomodoroSettingsDraft,
+  PomodoroSettingsErrors,
 } from '../../domain/pomodoro/types/PomodoroSettings';
 import { settingsToDraft } from '../../domain/pomodoro/types/PomodoroSettings';
 import {
-    normalizeSettingsDraftValue,
-    validatePomodoroSettingsDraft,
+  normalizeSettingsDraftValue,
+  validatePomodoroSettingsDraft,
 } from '../../domain/pomodoro/validation/pomodoroSettingsValidation';
 import { useDashboardProgress } from '../../hooks/useDashboardProgress';
 import { useAuthSession } from '../../lib/supabase/hooks';
@@ -76,6 +76,7 @@ const PomodoroPage: React.FC = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [draft, setDraft] = useState<PomodoroSettingsDraft>(settingsToDraft(DEFAULT_POMODORO_SETTINGS));
   const [fieldErrors, setFieldErrors] = useState<PomodoroSettingsErrors>({});
+  const [inFlightAction, setInFlightAction] = useState<'start' | 'pause' | 'resume' | 'advance' | 'cancel' | null>(null);
 
   const hiddenAtRef = useRef<number | null>(null);
 
@@ -147,16 +148,44 @@ const PomodoroPage: React.FC = () => {
     }
   }, [settings, settingsOpen]);
 
+  const runAction = async (
+    action: 'start' | 'pause' | 'resume' | 'advance' | 'cancel',
+    callback: () => Promise<void | boolean>,
+  ) => {
+    if (inFlightAction) {
+      return;
+    }
+
+    setInFlightAction(action);
+    try {
+      await callback();
+    } finally {
+      setInFlightAction(null);
+    }
+  };
+
   const handleStart = async () => {
-    await start();
+    await runAction('start', async () => {
+      await start();
+    });
+  };
+
+  const handlePause = async () => {
+    await runAction('pause', pause);
+  };
+
+  const handleResume = async () => {
+    await runAction('resume', resume);
   };
 
   const handleCancel = async () => {
-    await reset();
+    await runAction('cancel', reset);
   };
 
   const handleAdvancePhase = async () => {
-    await advanceToNextPhase();
+    await runAction('advance', async () => {
+      await advanceToNextPhase();
+    });
   };
 
   const handleOpenSettings = () => {
@@ -205,6 +234,7 @@ const PomodoroPage: React.FC = () => {
   const displayedCompletedFocusSessionsCount = persistedCompletedFocusSessionsCount ?? completedFocusSessionsCount;
   const displayedStudiedMinutes = persistedTotalFocusTimeMinutes ?? Math.floor(totalFocusStudySeconds / 60);
   const latestWalletTransaction = walletTransactions[0];
+  const hasActionInFlight = Boolean(inFlightAction);
 
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 6 }}>
@@ -259,23 +289,36 @@ const PomodoroPage: React.FC = () => {
 
           <Box>
             {!pomodoro && (
-              <Button onClick={handleStart} variant="contained" size="large" aria-label="Iniciar sessao Pomodoro">
-                Iniciar sessão
+              <Button
+                onClick={handleStart}
+                variant="contained"
+                size="large"
+                aria-label="Iniciar sessao Pomodoro"
+                disabled={hasActionInFlight || settingsLoading}
+              >
+                {inFlightAction === 'start' ? 'Iniciando...' : 'Iniciar sessão'}
               </Button>
             )}
             {pomodoro && pomodoro.status === 'running' && (
               <Stack spacing={1.5}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-                  <Button onClick={pause} variant="outlined" aria-label="Pausar sessao Pomodoro" fullWidth>
-                    Pausar
+                  <Button
+                    onClick={handlePause}
+                    variant="outlined"
+                    aria-label="Pausar sessao Pomodoro"
+                    fullWidth
+                    disabled={hasActionInFlight}
+                  >
+                    {inFlightAction === 'pause' ? 'Pausando...' : 'Pausar'}
                   </Button>
                   <Button
                     onClick={handleAdvancePhase}
                     variant="contained"
                     aria-label="Avancar fase Pomodoro"
                     fullWidth
+                    disabled={hasActionInFlight}
                   >
-                    Avancar fase
+                    {inFlightAction === 'advance' ? 'Avancando...' : 'Avancar fase'}
                   </Button>
                 </Stack>
                 <Button
@@ -284,24 +327,32 @@ const PomodoroPage: React.FC = () => {
                   color="error"
                   aria-label="Cancelar sessao Pomodoro"
                   fullWidth
+                  disabled={hasActionInFlight}
                 >
-                  Cancelar sessão
+                  {inFlightAction === 'cancel' ? 'Cancelando...' : 'Cancelar sessão'}
                 </Button>
               </Stack>
             )}
             {pomodoro && pomodoro.status === 'paused' && (
               <Stack spacing={1.5}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-                  <Button onClick={resume} variant="contained" aria-label="Retomar sessao Pomodoro" fullWidth>
-                    Retomar
+                  <Button
+                    onClick={handleResume}
+                    variant="contained"
+                    aria-label="Retomar sessao Pomodoro"
+                    fullWidth
+                    disabled={hasActionInFlight}
+                  >
+                    {inFlightAction === 'resume' ? 'Retomando...' : 'Retomar'}
                   </Button>
                   <Button
                     onClick={handleAdvancePhase}
                     variant="outlined"
                     aria-label="Avancar fase Pomodoro pausada"
                     fullWidth
+                    disabled={hasActionInFlight}
                   >
-                    Avancar fase
+                    {inFlightAction === 'advance' ? 'Avancando...' : 'Avancar fase'}
                   </Button>
                 </Stack>
                 <Button
@@ -310,8 +361,9 @@ const PomodoroPage: React.FC = () => {
                   color="error"
                   aria-label="Cancelar sessao Pomodoro"
                   fullWidth
+                  disabled={hasActionInFlight}
                 >
-                  Cancelar sessão
+                  {inFlightAction === 'cancel' ? 'Cancelando...' : 'Cancelar sessão'}
                 </Button>
               </Stack>
             )}
