@@ -14,7 +14,8 @@ import {
     Typography,
 } from '@mui/material';
 import React, { useMemo, useState } from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
+import PrivacyPolicyReadBox from '../../components/auth/PrivacyPolicyReadBox';
 import {
     REGISTER_FORM_INITIAL_VALUES,
     type RegisterFieldName,
@@ -27,19 +28,21 @@ import {
 } from '../../domain/auth/validation/registerValidation';
 import { registerWithEmail } from '../../lib/supabase/registerService';
 
+const LGPD_READ_REQUIRED_MESSAGE = 'Role ate o final da politica de privacidade para habilitar o aceite LGPD.';
+
 const RegisterPage: React.FC = () => {
-    const navigate = useNavigate();
     const [formValues, setFormValues] = useState<RegisterFormValues>(REGISTER_FORM_INITIAL_VALUES);
     const [fieldErrors, setFieldErrors] = useState<RegisterFormErrors>({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [requiresEmailConfirmation, setRequiresEmailConfirmation] = useState(true);
+    const [hasReadPrivacyPolicy, setHasReadPrivacyPolicy] = useState(false);
 
     const isSubmitDisabled = useMemo(() => loading || success, [loading, success]);
-    const canSubmit = useMemo(
-        () => !loading && !success && formValues.acceptLgpd,
-        [formValues.acceptLgpd, loading, success]
+    const isLgpdCheckboxDisabled = useMemo(
+        () => isSubmitDisabled || !hasReadPrivacyPolicy,
+        [hasReadPrivacyPolicy, isSubmitDisabled]
     );
 
     const handleTextChange = (field: Exclude<RegisterFieldName, 'acceptLgpd'>) => (
@@ -61,6 +64,14 @@ const RegisterPage: React.FC = () => {
     };
 
     const handleLgpdChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (!hasReadPrivacyPolicy) {
+            setFieldErrors((prev) => ({
+                ...prev,
+                acceptLgpd: LGPD_READ_REQUIRED_MESSAGE,
+            }));
+            return;
+        }
+
         const checked = event.target.checked;
         setFormValues((prev) => ({ ...prev, acceptLgpd: checked }));
 
@@ -69,9 +80,29 @@ const RegisterPage: React.FC = () => {
         }
     };
 
+    const handlePolicyCompletionChange = (isCompleted: boolean) => {
+        setHasReadPrivacyPolicy(isCompleted);
+
+        if (!isCompleted && formValues.acceptLgpd) {
+            setFormValues((prev) => ({ ...prev, acceptLgpd: false }));
+        }
+
+        if (isCompleted && fieldErrors.acceptLgpd === LGPD_READ_REQUIRED_MESSAGE) {
+            setFieldErrors((prev) => ({ ...prev, acceptLgpd: undefined }));
+        }
+    };
+
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
         if (loading) {
+            return;
+        }
+
+        if (!hasReadPrivacyPolicy) {
+            setFieldErrors((prev) => ({
+                ...prev,
+                acceptLgpd: LGPD_READ_REQUIRED_MESSAGE,
+            }));
             return;
         }
 
@@ -244,6 +275,10 @@ const RegisterPage: React.FC = () => {
                         />
 
                         <Box>
+                            <PrivacyPolicyReadBox onCompletionChange={handlePolicyCompletionChange} />
+                        </Box>
+
+                        <Box>
                             <FormControlLabel
                                 control={(
                                     <Checkbox
@@ -251,7 +286,7 @@ const RegisterPage: React.FC = () => {
                                         name="acceptLgpd"
                                         checked={formValues.acceptLgpd}
                                         onChange={handleLgpdChange}
-                                        disabled={isSubmitDisabled}
+                                        disabled={isLgpdCheckboxDisabled}
                                         inputProps={{
                                             'aria-invalid': Boolean(fieldErrors.acceptLgpd),
                                         }}
@@ -272,6 +307,11 @@ const RegisterPage: React.FC = () => {
                                     </Typography>
                                 )}
                             />
+                            {!hasReadPrivacyPolicy && !fieldErrors.acceptLgpd && (
+                                <FormHelperText>
+                                    Role ate o final da politica para liberar este campo.
+                                </FormHelperText>
+                            )}
                             {fieldErrors.acceptLgpd && (
                                 <FormHelperText error>
                                     {fieldErrors.acceptLgpd}
@@ -284,7 +324,7 @@ const RegisterPage: React.FC = () => {
                         fullWidth
                         variant="contained"
                         size="large"
-                        disabled={!canSubmit}
+                        disabled={isSubmitDisabled}
                         sx={{ mt: 3, mb: 2, borderRadius: '999px', py: 1.5 }}
                     >
                         {loading ? <CircularProgress size={24} color="inherit" /> : 'Registrar'}

@@ -1,0 +1,89 @@
+import { fireEvent, render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import RegisterPage from './RegisterPage';
+
+const { registerWithEmailMock } = vi.hoisted(() => ({
+  registerWithEmailMock: vi.fn(),
+}));
+
+vi.mock('../../lib/supabase/registerService', () => ({
+  registerWithEmail: registerWithEmailMock,
+}));
+
+function fillRequiredFields(): void {
+  fireEvent.change(screen.getByLabelText(/Nome completo/i), { target: { value: 'Maria da Silva' } });
+  fireEvent.change(screen.getByLabelText(/Data de nascimento/i), { target: { value: '1998-01-20' } });
+  fireEvent.change(screen.getByLabelText(/^E-mail/i), { target: { value: 'maria.silva@example.com' } });
+  fireEvent.change(screen.getByLabelText(/Celular/i), { target: { value: '(11) 99999-9999' } });
+  fireEvent.change(screen.getByLabelText(/^Senha$/i), { target: { value: 'Senha123' } });
+  fireEvent.change(screen.getByLabelText(/Confirmar senha/i), { target: { value: 'Senha123' } });
+}
+
+function completePrivacyPolicyRead(): void {
+  const policyRegion = screen.getByRole('region', { name: /Texto da politica de privacidade/i });
+
+  Object.defineProperty(policyRegion, 'scrollHeight', {
+    configurable: true,
+    value: 1000,
+  });
+
+  Object.defineProperty(policyRegion, 'clientHeight', {
+    configurable: true,
+    value: 300,
+  });
+
+  fireEvent.scroll(policyRegion, { target: { scrollTop: 700 } });
+}
+
+describe('RegisterPage - consentimento LGPD', () => {
+  beforeEach(() => {
+    registerWithEmailMock.mockReset();
+    registerWithEmailMock.mockResolvedValue({
+      success: true,
+      requiresEmailConfirmation: true,
+    });
+  });
+
+  it('mantem checkbox LGPD bloqueado antes da leitura da politica', () => {
+    render(
+      <MemoryRouter>
+        <RegisterPage />
+      </MemoryRouter>,
+    );
+
+    const checkbox = screen.getByRole('checkbox', { name: /Li e aceito a politica de privacidade/i });
+    expect(checkbox.getAttribute('disabled')).not.toBeNull();
+    expect(screen.getByText(/Role ate o final da politica para liberar este campo/i)).toBeTruthy();
+  });
+
+  it('habilita checkbox LGPD ao chegar ao final da politica', () => {
+    render(
+      <MemoryRouter>
+        <RegisterPage />
+      </MemoryRouter>,
+    );
+
+    completePrivacyPolicyRead();
+
+    const checkbox = screen.getByRole('checkbox', { name: /Li e aceito a politica de privacidade/i });
+    expect(checkbox.getAttribute('disabled')).toBeNull();
+    expect(screen.getByText(/Leitura minima concluida/i)).toBeTruthy();
+  });
+
+  it('bloqueia submit sem aceite valido apos leitura da politica', async () => {
+    render(
+      <MemoryRouter>
+        <RegisterPage />
+      </MemoryRouter>,
+    );
+
+    fillRequiredFields();
+    completePrivacyPolicyRead();
+
+    fireEvent.click(screen.getByRole('button', { name: /Registrar/i }));
+
+    expect(screen.getByText(/Voce precisa aceitar a politica de privacidade para continuar/i)).toBeTruthy();
+    expect(registerWithEmailMock).not.toHaveBeenCalled();
+  });
+});
