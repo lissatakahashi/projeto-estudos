@@ -23,6 +23,10 @@ import {
     type RegisterFormValues,
 } from '../../domain/auth/types/register';
 import {
+    getBirthDateLimits,
+    REGISTER_MIN_AGE_YEARS,
+} from '../../domain/auth/validation/birthDatePolicy';
+import {
     normalizeBrazilianPhone,
     validateRegisterForm,
 } from '../../domain/auth/validation/registerValidation';
@@ -38,6 +42,7 @@ const RegisterPage: React.FC = () => {
     const [success, setSuccess] = useState(false);
     const [requiresEmailConfirmation, setRequiresEmailConfirmation] = useState(true);
     const [hasReadPrivacyPolicy, setHasReadPrivacyPolicy] = useState(false);
+    const birthDateLimits = useMemo(() => getBirthDateLimits(), []);
 
     const isSubmitDisabled = useMemo(() => loading || success, [loading, success]);
     const isLgpdCheckboxDisabled = useMemo(
@@ -201,10 +206,14 @@ const RegisterPage: React.FC = () => {
                             value={formValues.birthDate}
                             onChange={handleTextChange('birthDate')}
                             error={Boolean(fieldErrors.birthDate)}
-                            helperText={fieldErrors.birthDate}
+                            helperText={fieldErrors.birthDate ?? `Idade mínima: ${REGISTER_MIN_AGE_YEARS} anos.`}
                             disabled={isSubmitDisabled}
                             aria-invalid={Boolean(fieldErrors.birthDate)}
                             InputLabelProps={{ shrink: true }}
+                            inputProps={{
+                                max: birthDateLimits.latestBirthDate,
+                                min: birthDateLimits.earliestBirthDate,
+                            }}
                         />
                         <TextField
                             margin="normal"
@@ -309,7 +318,7 @@ const RegisterPage: React.FC = () => {
                             />
                             {!hasReadPrivacyPolicy && !fieldErrors.acceptLgpd && (
                                 <FormHelperText>
-                                    Role ate o final da politica para liberar este campo.
+                                    Role até o final da política para liberar este campo.
                                 </FormHelperText>
                             )}
                             {fieldErrors.acceptLgpd && (

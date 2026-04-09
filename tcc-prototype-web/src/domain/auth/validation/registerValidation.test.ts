@@ -1,6 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import type { RegisterFormValues } from '../types/register';
+import { getBirthDateLimits, REGISTER_MIN_AGE_YEARS } from './birthDatePolicy';
 import { validateRegisterForm } from './registerValidation';
+
+function addDaysToIsoDate(isoDate: string, days: number): string {
+  const baseDate = new Date(`${isoDate}T00:00:00Z`);
+  baseDate.setUTCDate(baseDate.getUTCDate() + days);
+
+  const year = baseDate.getUTCFullYear();
+  const month = String(baseDate.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(baseDate.getUTCDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
 
 const basePayload: RegisterFormValues = {
   fullName: 'Maria da Silva',
@@ -53,6 +65,31 @@ describe('validateRegisterForm', () => {
 
     expect(result.sanitized).toBeUndefined();
     expect(result.errors.password).toMatch(/8 caracteres/i);
+  });
+
+  it('falha para data de nascimento futura', () => {
+    const result = validateRegisterForm({
+      ...basePayload,
+      birthDate: '2999-01-01',
+    });
+
+    expect(result.sanitized).toBeUndefined();
+    expect(result.errors.birthDate).toMatch(/não pode ser futura/i);
+  });
+
+  it('falha para idade abaixo do minimo permitido', () => {
+    const { latestBirthDate } = getBirthDateLimits();
+    const underageBirthDate = addDaysToIsoDate(latestBirthDate, 1);
+
+    const result = validateRegisterForm({
+      ...basePayload,
+      birthDate: underageBirthDate,
+    });
+
+    expect(result.sanitized).toBeUndefined();
+    expect(result.errors.birthDate).toBe(
+      `A data de nascimento deve indicar idade minima de ${REGISTER_MIN_AGE_YEARS} anos.`,
+    );
   });
 
   it('falha quando confirmacao de senha nao confere', () => {

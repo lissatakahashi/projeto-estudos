@@ -4,6 +4,11 @@ import type {
     RegisterValidationResult,
     ValidRegisterPayload,
 } from '../types/register';
+import {
+    REGISTER_MIN_AGE_YEARS,
+    validateBirthDate,
+    type BirthDateValidationIssue,
+} from './birthDatePolicy';
 import { normalizeBrazilianPhone, normalizeEmail } from './identifier';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -13,30 +18,16 @@ function normalizeFullName(fullName: string): string {
   return fullName.trim().replace(/\s+/g, ' ');
 }
 
-function isValidBirthDate(value: string): boolean {
-  if (!value) {
-    return false;
+function getBirthDateErrorMessage(issue?: BirthDateValidationIssue): string {
+  if (issue === 'future_date') {
+    return 'A data de nascimento nao pode ser futura.';
   }
 
-  const parsed = new Date(`${value}T00:00:00`);
-  if (Number.isNaN(parsed.getTime())) {
-    return false;
+  if (issue === 'too_young') {
+    return `A data de nascimento deve indicar idade minima de ${REGISTER_MIN_AGE_YEARS} anos.`;
   }
 
-  const today = new Date();
-  const todayUtc = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
-  const birthUtc = new Date(Date.UTC(parsed.getFullYear(), parsed.getMonth(), parsed.getDate()));
-
-  if (birthUtc > todayUtc) {
-    return false;
-  }
-
-  const oldestAllowed = new Date(Date.UTC(todayUtc.getUTCFullYear() - 120, todayUtc.getUTCMonth(), todayUtc.getUTCDate()));
-  if (birthUtc < oldestAllowed) {
-    return false;
-  }
-
-  return true;
+  return 'Informe uma data de nascimento valida.';
 }
 
 function hasAtLeastTwoWords(fullName: string): boolean {
@@ -67,8 +58,12 @@ export function validateRegisterForm(values: RegisterFormValues): RegisterValida
 
   if (!birthDate) {
     errors.birthDate = 'Informe sua data de nascimento.';
-  } else if (!isValidBirthDate(birthDate)) {
-    errors.birthDate = 'Informe uma data de nascimento válida e realista.';
+  } else {
+    const birthDateValidation = validateBirthDate(birthDate);
+
+    if (!birthDateValidation.isValid) {
+      errors.birthDate = getBirthDateErrorMessage(birthDateValidation.issue);
+    }
   }
 
   if (!email) {

@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { getBirthDateLimits } from '../../domain/auth/validation/birthDatePolicy';
 import RegisterPage from './RegisterPage';
 
 const { registerWithEmailMock } = vi.hoisted(() => ({
@@ -57,6 +58,19 @@ describe('RegisterPage - consentimento LGPD', () => {
     expect(screen.getByText(/Role ate o final da politica para liberar este campo/i)).toBeTruthy();
   });
 
+  it('define limite maximo coerente para data de nascimento no input', () => {
+    render(
+      <MemoryRouter>
+        <RegisterPage />
+      </MemoryRouter>,
+    );
+
+    const birthDateInput = screen.getByLabelText(/Data de nascimento/i);
+    const { latestBirthDate } = getBirthDateLimits();
+
+    expect(birthDateInput.getAttribute('max')).toBe(latestBirthDate);
+  });
+
   it('habilita checkbox LGPD ao chegar ao final da politica', () => {
     render(
       <MemoryRouter>
@@ -84,6 +98,24 @@ describe('RegisterPage - consentimento LGPD', () => {
     fireEvent.click(screen.getByRole('button', { name: /Registrar/i }));
 
     expect(screen.getByText(/Voce precisa aceitar a politica de privacidade para continuar/i)).toBeTruthy();
+    expect(registerWithEmailMock).not.toHaveBeenCalled();
+  });
+
+  it('bloqueia submit quando data de nascimento e futura', async () => {
+    render(
+      <MemoryRouter>
+        <RegisterPage />
+      </MemoryRouter>,
+    );
+
+    fillRequiredFields();
+    fireEvent.change(screen.getByLabelText(/Data de nascimento/i), { target: { value: '2999-01-01' } });
+    completePrivacyPolicyRead();
+    fireEvent.click(screen.getByRole('checkbox', { name: /Li e aceito a politica de privacidade/i }));
+
+    fireEvent.click(screen.getByRole('button', { name: /Registrar/i }));
+
+    expect(screen.getByText(/A data de nascimento nao pode ser futura/i)).toBeTruthy();
     expect(registerWithEmailMock).not.toHaveBeenCalled();
   });
 });

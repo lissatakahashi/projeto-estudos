@@ -1,4 +1,9 @@
 import type { ValidRegisterPayload } from '../../domain/auth/types/register';
+import {
+    REGISTER_MIN_AGE_YEARS,
+    validateBirthDate,
+    type BirthDateValidationIssue,
+} from '../../domain/auth/validation/birthDatePolicy';
 import supabase from './client';
 
 type RegisterServiceResult = {
@@ -57,6 +62,18 @@ function toFriendlyAuthErrorMessage(errorMessage: string): string {
   return 'Nao foi possivel concluir o cadastro agora. Tente novamente em instantes.';
 }
 
+function toFriendlyBirthDateErrorMessage(issue?: BirthDateValidationIssue): string {
+  if (issue === 'future_date') {
+    return 'A data de nascimento nao pode ser futura.';
+  }
+
+  if (issue === 'too_young') {
+    return `A data de nascimento deve indicar idade minima de ${REGISTER_MIN_AGE_YEARS} anos.`;
+  }
+
+  return 'Informe uma data de nascimento valida.';
+}
+
 async function upsertProfile(payload: ProfileUpsertPayload): Promise<{ error: string | null }> {
   const { error } = await supabase
     .from('profiles')
@@ -70,6 +87,14 @@ async function upsertProfile(payload: ProfileUpsertPayload): Promise<{ error: st
 }
 
 export async function registerWithEmail(payload: ValidRegisterPayload): Promise<RegisterServiceResult> {
+  const birthDateValidation = validateBirthDate(payload.birthDate);
+  if (!birthDateValidation.isValid) {
+    return {
+      success: false,
+      message: toFriendlyBirthDateErrorMessage(birthDateValidation.issue),
+    };
+  }
+
   const lgpdConsentAt = new Date().toISOString();
 
   const { data, error } = await supabase.auth.signUp({

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ValidRegisterPayload } from '../../domain/auth/types/register';
+import { getBirthDateLimits } from '../../domain/auth/validation/birthDatePolicy';
 
 const {
   signUpMock,
@@ -27,6 +28,17 @@ vi.mock('./client', () => ({
 }));
 
 import { registerWithEmail } from './registerService';
+
+function addDaysToIsoDate(isoDate: string, days: number): string {
+  const baseDate = new Date(`${isoDate}T00:00:00Z`);
+  baseDate.setUTCDate(baseDate.getUTCDate() + days);
+
+  const year = baseDate.getUTCFullYear();
+  const month = String(baseDate.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(baseDate.getUTCDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
 
 const validPayload: ValidRegisterPayload = {
   fullName: 'Maria da Silva',
@@ -77,5 +89,30 @@ describe('registerWithEmail', () => {
     expect(result.success).toBe(true);
     expect(result.requiresEmailConfirmation).toBe(true);
     expect(fromMock).not.toHaveBeenCalled();
+  });
+
+  it('deve bloquear payload com data de nascimento futura antes de chamar o Supabase', async () => {
+    const result = await registerWithEmail({
+      ...validPayload,
+      birthDate: '2999-01-01',
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.message).toMatch(/nao pode ser futura/i);
+    expect(signUpMock).not.toHaveBeenCalled();
+  });
+
+  it('deve bloquear payload com idade abaixo da minima antes de chamar o Supabase', async () => {
+    const { latestBirthDate } = getBirthDateLimits();
+    const underageBirthDate = addDaysToIsoDate(latestBirthDate, 1);
+
+    const result = await registerWithEmail({
+      ...validPayload,
+      birthDate: underageBirthDate,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.message).toMatch(/idade minima/i);
+    expect(signUpMock).not.toHaveBeenCalled();
   });
 });

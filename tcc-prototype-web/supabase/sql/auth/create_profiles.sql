@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     "fullName" TEXT NOT NULL CHECK (char_length(trim("fullName")) >= 5),
     "birthDate" DATE NOT NULL CHECK (
-        "birthDate" <= CURRENT_DATE
+        "birthDate" <= (CURRENT_DATE - INTERVAL '13 years')
         AND "birthDate" >= (CURRENT_DATE - INTERVAL '120 years')
     ),
     email TEXT NOT NULL,
@@ -77,7 +77,7 @@ BEGIN
     VALUES (
         NEW.id,
         COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
-        COALESCE(NULLIF(NEW.raw_user_meta_data->>'birth_date', '')::date, CURRENT_DATE),
+        COALESCE(NULLIF(NEW.raw_user_meta_data->>'birth_date', '')::date, (CURRENT_DATE - INTERVAL '13 years')::date),
         COALESCE(NEW.email, ''),
         COALESCE(NEW.raw_user_meta_data->>'phone', ''),
         COALESCE((NEW.raw_user_meta_data->>'lgpd_consent_accepted')::boolean, FALSE),
