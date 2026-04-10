@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import React, { useMemo, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import EmailDeliveryGuidance from '../../components/auth/EmailDeliveryGuidance';
 import PrivacyPolicyReadBox from '../../components/auth/PrivacyPolicyReadBox';
 import {
     REGISTER_FORM_INITIAL_VALUES,
@@ -146,6 +147,9 @@ const RegisterPage: React.FC = () => {
                             ? 'Verifique seu e-mail para confirmar seu cadastro.'
                             : 'Sua conta foi criada com sucesso.'}
                     </Alert>
+                    {requiresEmailConfirmation && (
+                        <EmailDeliveryGuidance context="register" />
+                    )}
                     <Button
                         fullWidth
                         variant="contained"
@@ -153,7 +157,7 @@ const RegisterPage: React.FC = () => {
                         to="/login"
                         sx={{ borderRadius: '999px' }}
                     >
-                        Ir para Login
+                        Ir para login
                     </Button>
                 </Paper>
             </Container>

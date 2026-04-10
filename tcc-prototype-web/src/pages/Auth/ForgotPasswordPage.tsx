@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import React, { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import EmailDeliveryGuidance from '../../components/auth/EmailDeliveryGuidance';
 import supabase from '../../lib/supabase/client';
 
 const ForgotPasswordPage: React.FC = () => {
@@ -69,9 +70,12 @@ const ForgotPasswordPage: React.FC = () => {
                 )}
 
                 {success && (
-                    <Alert severity="success" sx={{ mb: 2 }}>
-                        Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha.
-                    </Alert>
+                    <>
+                        <Alert severity="success" sx={{ mb: 2 }}>
+                            Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha.
+                        </Alert>
+                        <EmailDeliveryGuidance context="reset-password" />
+                    </>
                 )}
 
                 <Box component="form" onSubmit={handleSubmit} noValidate>

@@ -118,4 +118,43 @@ describe('RegisterPage - consentimento LGPD', () => {
     expect(screen.getByText(/A data de nascimento nao pode ser futura/i)).toBeTruthy();
     expect(registerWithEmailMock).not.toHaveBeenCalled();
   });
+
+  it('exibe orientacoes de entrega de e-mail apos cadastro com confirmacao por e-mail', async () => {
+    render(
+      <MemoryRouter>
+        <RegisterPage />
+      </MemoryRouter>,
+    );
+
+    fillRequiredFields();
+    completePrivacyPolicyRead();
+    fireEvent.click(screen.getByRole('checkbox', { name: /Li e aceito a politica de privacidade/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Registrar/i }));
+
+    expect(await screen.findByText(/Cadastro realizado!/i)).toBeTruthy();
+    expect(screen.getByText(/Verifique sua caixa de entrada/i)).toBeTruthy();
+    expect(screen.getByText(/caixa de spam ou lixo eletronico/i)).toBeTruthy();
+    expect(screen.getByText(/marque o remetente como confiavel/i)).toBeTruthy();
+  });
+
+  it('nao exibe orientacoes de entrega de e-mail quando o cadastro falha', async () => {
+    registerWithEmailMock.mockResolvedValueOnce({
+      success: false,
+      message: 'Erro no envio',
+    });
+
+    render(
+      <MemoryRouter>
+        <RegisterPage />
+      </MemoryRouter>,
+    );
+
+    fillRequiredFields();
+    completePrivacyPolicyRead();
+    fireEvent.click(screen.getByRole('checkbox', { name: /Li e aceito a politica de privacidade/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Registrar/i }));
+
+    expect(await screen.findByText(/Erro no envio/i)).toBeTruthy();
+    expect(screen.queryByText(/Verifique sua caixa de entrada/i)).toBeNull();
+  });
 });
