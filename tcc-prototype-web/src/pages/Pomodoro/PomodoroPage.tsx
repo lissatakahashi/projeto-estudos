@@ -1,30 +1,35 @@
 import {
-  Alert,
-  Box,
-  Button,
-  Chip,
-  CircularProgress,
-  Container,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
+    Alert,
+    Box,
+    Button,
+    Chip,
+    CircularProgress,
+    Container,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Paper,
+    Stack,
+    TextField,
+    Typography,
 } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { DEFAULT_POMODORO_SETTINGS } from '../../domain/pomodoro/constants/pomodoroSettings';
+import {
+    getPomodoroFieldHelperText,
+    POMODORO_SETTINGS_FIELD_GUIDANCE,
+    POMODORO_SETTINGS_GENERAL_GUIDANCE,
+} from '../../domain/pomodoro/constants/pomodoroSettingsGuidance';
 import { getPomodoroInvalidationReasonLabel } from '../../domain/pomodoro/types/PomodoroInvalidation';
 import type {
-  PomodoroSettingsDraft,
-  PomodoroSettingsErrors,
+    PomodoroSettingsDraft,
+    PomodoroSettingsErrors,
 } from '../../domain/pomodoro/types/PomodoroSettings';
 import { settingsToDraft } from '../../domain/pomodoro/types/PomodoroSettings';
 import {
-  normalizeSettingsDraftValue,
-  validatePomodoroSettingsDraft,
+    normalizeSettingsDraftValue,
+    validatePomodoroSettingsDraft,
 } from '../../domain/pomodoro/validation/pomodoroSettingsValidation';
 import { useDashboardProgress } from '../../hooks/useDashboardProgress';
 import { useAuthSession } from '../../lib/supabase/hooks';
@@ -404,53 +409,62 @@ const PomodoroPage: React.FC = () => {
         <DialogTitle id="pomodoro-settings-title">Configuração da sessão Pomodoro</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2} sx={{ mt: 1 }}>
+            <Alert severity="info" sx={{ mb: 0 }}>
+              <Typography component="p" variant="body2" sx={{ fontWeight: 600 }}>
+                {POMODORO_SETTINGS_GENERAL_GUIDANCE.title}
+              </Typography>
+              <Typography component="p" variant="body2" sx={{ mt: 0.5 }}>
+                {POMODORO_SETTINGS_GENERAL_GUIDANCE.description}
+              </Typography>
+            </Alert>
+
             <Typography variant="body2" color="text.secondary">
-              Ajuste os parâmetros da sessão. As alterações aplicam imediatamente para novas sessões.
+              As alterações aplicam imediatamente para novas sessões.
             </Typography>
 
             <TextField
-              label="Duração do foco (minutos)"
+              label={POMODORO_SETTINGS_FIELD_GUIDANCE.focusDurationMinutes.label}
               value={draft.focusDurationMinutes}
               onChange={handleDraftChange('focusDurationMinutes')}
               type="text"
               inputMode="numeric"
-              helperText={fieldErrors.focusDurationMinutes ?? 'Valor recomendado entre 5 e 120 minutos.'}
+              helperText={fieldErrors.focusDurationMinutes ?? getPomodoroFieldHelperText('focusDurationMinutes')}
               error={Boolean(fieldErrors.focusDurationMinutes)}
               aria-invalid={Boolean(fieldErrors.focusDurationMinutes)}
               fullWidth
             />
 
             <TextField
-              label="Duração da pausa curta (minutos)"
+              label={POMODORO_SETTINGS_FIELD_GUIDANCE.shortBreakDurationMinutes.label}
               value={draft.shortBreakDurationMinutes}
               onChange={handleDraftChange('shortBreakDurationMinutes')}
               type="text"
               inputMode="numeric"
-              helperText={fieldErrors.shortBreakDurationMinutes ?? 'Valor recomendado entre 1 e 30 minutos.'}
+              helperText={fieldErrors.shortBreakDurationMinutes ?? getPomodoroFieldHelperText('shortBreakDurationMinutes')}
               error={Boolean(fieldErrors.shortBreakDurationMinutes)}
               aria-invalid={Boolean(fieldErrors.shortBreakDurationMinutes)}
               fullWidth
             />
 
             <TextField
-              label="Duração da pausa longa (minutos)"
+              label={POMODORO_SETTINGS_FIELD_GUIDANCE.longBreakDurationMinutes.label}
               value={draft.longBreakDurationMinutes}
               onChange={handleDraftChange('longBreakDurationMinutes')}
               type="text"
               inputMode="numeric"
-              helperText={fieldErrors.longBreakDurationMinutes ?? 'Valor recomendado entre 5 e 60 minutos e maior ou igual a pausa curta.'}
+              helperText={fieldErrors.longBreakDurationMinutes ?? getPomodoroFieldHelperText('longBreakDurationMinutes')}
               error={Boolean(fieldErrors.longBreakDurationMinutes)}
               aria-invalid={Boolean(fieldErrors.longBreakDurationMinutes)}
               fullWidth
             />
 
             <TextField
-              label="Ciclos de foco antes da pausa longa"
+              label={POMODORO_SETTINGS_FIELD_GUIDANCE.cyclesBeforeLongBreak.label}
               value={draft.cyclesBeforeLongBreak}
               onChange={handleDraftChange('cyclesBeforeLongBreak')}
               type="text"
               inputMode="numeric"
-              helperText={fieldErrors.cyclesBeforeLongBreak ?? 'Valor recomendado entre 1 e 12 ciclos.'}
+              helperText={fieldErrors.cyclesBeforeLongBreak ?? getPomodoroFieldHelperText('cyclesBeforeLongBreak')}
               error={Boolean(fieldErrors.cyclesBeforeLongBreak)}
               aria-invalid={Boolean(fieldErrors.cyclesBeforeLongBreak)}
               fullWidth
