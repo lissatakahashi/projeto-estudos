@@ -32,7 +32,7 @@ const feedbackCatalog: Record<MotivationalFeedbackEvent, CatalogEntry> = {
     variant: 'warning',
     durationMs: 5200,
     templates: [
-      (payload) => `Sessao interrompida por ${payload.invalidReasonLabel ?? 'abandono'}. O progresso nao foi contabilizado.`,
+      (payload) => `Sessão interrompida por ${payload.invalidReasonLabel ?? 'abandono'}. O progresso não foi contabilizado.`,
       (payload) => `A sessão foi invalidada por ${payload.invalidReasonLabel ?? 'interrupcao'}. Sem contagem neste ciclo.`,
     ],
   },

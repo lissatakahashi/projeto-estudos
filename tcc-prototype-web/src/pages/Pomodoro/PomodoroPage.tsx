@@ -28,6 +28,11 @@ import type {
 } from '../../domain/pomodoro/types/PomodoroSettings';
 import { settingsToDraft } from '../../domain/pomodoro/types/PomodoroSettings';
 import {
+    canEditPomodoroSettings,
+    isPomodoroConfigLocked,
+    POMODORO_SETTINGS_LOCK_REASON,
+} from '../../domain/pomodoro/usecases/pomodoroSettingsLock';
+import {
     normalizeSettingsDraftValue,
     validatePomodoroSettingsDraft,
 } from '../../domain/pomodoro/validation/pomodoroSettingsValidation';
@@ -194,6 +199,10 @@ const PomodoroPage: React.FC = () => {
   };
 
   const handleOpenSettings = () => {
+    if (!canEditPomodoroSettings({ cyclePhase: cycleState.phase, activePomodoro: pomodoro })) {
+      return;
+    }
+
     clearSettingsFeedback();
     setFieldErrors({});
     setDraft(settingsToDraft(settings));
@@ -230,6 +239,10 @@ const PomodoroPage: React.FC = () => {
 
   const modeLabel = cycleState.phase === 'paused' ? `paused (${cycleState.activeMode})` : cycleState.phase;
   const displaySeconds = pomodoro ? pomodoro.remaining : cycleState.remainingSeconds;
+  const isSettingsLocked = isPomodoroConfigLocked({
+    cyclePhase: cycleState.phase,
+    activePomodoro: pomodoro,
+  });
   const plannedFocusLabel = `${settings.focusDurationMinutes} min`;
   const plannedShortBreakLabel = `${settings.shortBreakDurationMinutes} min`;
   const plannedLongBreakLabel = `${settings.longBreakDurationMinutes} min`;
@@ -254,10 +267,28 @@ const PomodoroPage: React.FC = () => {
                 Configure seu ciclo de foco e pausas para manter consistência acadêmica no método.
               </Typography>
             </Box>
-            <Button variant="outlined" onClick={handleOpenSettings} aria-label="Abrir configuracao do Pomodoro">
+            <Button
+              variant="outlined"
+              onClick={handleOpenSettings}
+              aria-label="Abrir configuracao do Pomodoro"
+              aria-describedby={isSettingsLocked ? 'pomodoro-settings-lock-reason' : undefined}
+              disabled={isSettingsLocked}
+            >
               Configurar sessão
             </Button>
           </Box>
+
+          {isSettingsLocked && (
+            <Typography
+              id="pomodoro-settings-lock-reason"
+              variant="caption"
+              color="text.secondary"
+              sx={{ mt: -1 }}
+              aria-live="polite"
+            >
+              {POMODORO_SETTINGS_LOCK_REASON}
+            </Typography>
+          )}
 
           {settingsError && <Alert severity="warning">{settingsError}</Alert>}
           {settingsSuccessMessage && <Alert severity="success">{settingsSuccessMessage}</Alert>}
