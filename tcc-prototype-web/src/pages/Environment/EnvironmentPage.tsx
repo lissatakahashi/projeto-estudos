@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import React, { useEffect, useMemo } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import PetEnvironmentActor from '../../components/pet/PetEnvironmentActor';
 import PetStatusCard from '../../components/pet/PetStatusCard';
 import {
     ENVIRONMENT_SLOT_DEFINITIONS,
@@ -20,6 +21,7 @@ import {
 import { getCompatibleInventoryItemsBySlot } from '../../domain/environment/usecases/getCompatibleInventoryItemsBySlot';
 import { getShopRarityPresentation } from '../../lib/shopRarity';
 import { useEnvironmentStore } from '../../state/useEnvironmentStore';
+import { usePetStore } from '../../state/usePetStore';
 import { useShopStore } from '../../state/useShopStore';
 
 const slotLayoutByName: Record<EnvironmentSlotName, { top: string; left: string; width: string; height: string }> = {
@@ -32,6 +34,8 @@ const slotLayoutByName: Record<EnvironmentSlotName, { top: string; left: string;
   decoration_right: { top: '54%', left: '78%', width: '14%', height: '18%' },
   floor: { top: '76%', left: '10%', width: '80%', height: '16%' },
 };
+
+const hiddenSlotsOnScene: EnvironmentSlotName[] = ['desk'];
 
 const EnvironmentPage: React.FC = () => {
   const userId = useShopStore((s) => s.userId);
@@ -52,13 +56,15 @@ const EnvironmentPage: React.FC = () => {
   const equipSlotWithInventoryItem = useEnvironmentStore((s) => s.equipSlotWithInventoryItem);
   const clearSlot = useEnvironmentStore((s) => s.clearSlot);
   const clearFeedback = useEnvironmentStore((s) => s.clearFeedback);
+  const loadPetState = usePetStore((s) => s.loadPetState);
 
   useEffect(() => {
     if (userId) {
       void loadInventory();
       void loadEnvironment();
+      void loadPetState();
     }
-  }, [loadEnvironment, loadInventory, userId]);
+  }, [loadEnvironment, loadInventory, loadPetState, userId]);
 
   useEffect(() => {
     return () => {
@@ -66,11 +72,18 @@ const EnvironmentPage: React.FC = () => {
     };
   }, [clearFeedback]);
 
+  useEffect(() => {
+    if (selectedSlot && hiddenSlotsOnScene.includes(selectedSlot)) {
+      setSelectedSlot(null);
+    }
+  }, [selectedSlot, setSelectedSlot]);
+
   const inventoryByEntryId = useMemo(() => {
     return new Map(inventory.map((entry) => [entry.inventoryEntryId, entry]));
   }, [inventory]);
 
   const selectedSlotDefinition = ENVIRONMENT_SLOT_DEFINITIONS.find((slot) => slot.slotName === selectedSlot) ?? null;
+  const sceneSlotDefinitions = ENVIRONMENT_SLOT_DEFINITIONS.filter((slot) => !hiddenSlotsOnScene.includes(slot.slotName));
 
   const compatibleItems = selectedSlot
     ? getCompatibleInventoryItemsBySlot(inventory, selectedSlot)
@@ -93,8 +106,6 @@ const EnvironmentPage: React.FC = () => {
             Personalize seu ambiente de estudo aplicando itens do inventário em posições fixas e persistentes.
           </Typography>
         </Box>
-
-        {userId && <PetStatusCard compact />}
 
         {!userId && (
           <Alert severity="info">
@@ -166,7 +177,10 @@ const EnvironmentPage: React.FC = () => {
                     backgroundRepeat: 'no-repeat',
                   }}
                 >
-                  {ENVIRONMENT_SLOT_DEFINITIONS.map((slotDefinition) => {
+                  {/* Pet em camada dedicada dentro do cenario para reforcar a composicao visual integrada. */}
+                  <PetEnvironmentActor />
+
+                  {sceneSlotDefinitions.map((slotDefinition) => {
                     const equipped = configuration.bySlot[slotDefinition.slotName];
                     const equippedInventoryItem = equipped
                       ? inventoryByEntryId.get(equipped.inventoryEntryId) ?? null
@@ -220,118 +234,122 @@ const EnvironmentPage: React.FC = () => {
               </CardContent>
             </Card>
 
-            <Card variant="outlined" sx={{ width: { xs: '100%', lg: 420 }, borderRadius: 3 }}>
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                  Personalização por posição
-                </Typography>
+            <Stack spacing={2} sx={{ width: { xs: '100%', lg: 420 } }}>
+              <PetStatusCard compact />
 
-                {!selectedSlotDefinition && (
-                  <Alert severity="info" sx={{ mt: 2 }}>
-                    Selecione uma posição no cenário para listar os itens compatíveis do inventário.
-                  </Alert>
-                )}
+              <Card variant="outlined" sx={{ borderRadius: 3 }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    Personalização por posição
+                  </Typography>
 
-                {selectedSlotDefinition && (
-                  <Stack spacing={2} sx={{ mt: 2 }}>
-                    <Box>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                        {selectedSlotDefinition.label}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {selectedSlotDefinition.description}
-                      </Typography>
-                      <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap' }}>
-                        {selectedSlotDefinition.acceptedItemCategories.map((category) => (
-                          <Chip
-                            key={category}
-                            size="small"
-                            variant="outlined"
-                            label={`Categoria: ${category}`}
-                          />
-                        ))}
-                      </Stack>
-                    </Box>
+                  {!selectedSlotDefinition && (
+                    <Alert severity="info" sx={{ mt: 2 }}>
+                      Selecione uma posição no cenário para listar os itens compatíveis do inventário.
+                    </Alert>
+                  )}
 
-                    {configuration.bySlot[selectedSlotDefinition.slotName] && (
-                      <Button
-                        variant="outlined"
-                        color="warning"
-                        disabled={pendingBySlot[selectedSlotDefinition.slotName]}
-                        onClick={() => {
-                          void clearSlot(selectedSlotDefinition.slotName);
-                        }}
-                      >
-                        Remover item equipado desta posição
-                      </Button>
-                    )}
+                  {selectedSlotDefinition && (
+                    <Stack spacing={2} sx={{ mt: 2 }}>
+                      <Box>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                          {selectedSlotDefinition.label}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {selectedSlotDefinition.description}
+                        </Typography>
+                        <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap' }}>
+                          {selectedSlotDefinition.acceptedItemCategories.map((category) => (
+                            <Chip
+                              key={category}
+                              size="small"
+                              variant="outlined"
+                              label={`Categoria: ${category}`}
+                            />
+                          ))}
+                        </Stack>
+                      </Box>
 
-                    {compatibleItems.length === 0 && (
-                      <Alert severity="info">
-                        Você não possui itens compatíveis para esta posição.
-                        {' '}
-                        <Button component={RouterLink} to="/shop" size="small">
-                          Ir para loja
+                      {configuration.bySlot[selectedSlotDefinition.slotName] && (
+                        <Button
+                          variant="outlined"
+                          color="warning"
+                          disabled={pendingBySlot[selectedSlotDefinition.slotName]}
+                          onClick={() => {
+                            void clearSlot(selectedSlotDefinition.slotName);
+                          }}
+                        >
+                          Remover item equipado desta posição
                         </Button>
-                      </Alert>
-                    )}
+                      )}
 
-                    {compatibleItems.map((entry) => {
-                      const currentlyEquipped = configuration.bySlot[selectedSlotDefinition.slotName]?.inventoryEntryId === entry.inventoryEntryId;
-                      const rarityPresentation = getShopRarityPresentation(entry.item.rarity);
+                      {compatibleItems.length === 0 && (
+                        <Alert severity="info">
+                          Você não possui itens compatíveis para esta posição.
+                          {' '}
+                          <Button component={RouterLink} to="/shop" size="small">
+                            Ir para loja
+                          </Button>
+                        </Alert>
+                      )}
 
-                      return (
-                        <Card key={entry.inventoryEntryId} variant="outlined" sx={{ borderRadius: 2 }}>
-                          <CardContent>
-                            <Stack spacing={1.5}>
-                              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                                {entry.item.name}
-                              </Typography>
-                              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
-                                <Chip size="small" label={entry.item.category} />
-                                <Chip
-                                  size="small"
-                                  color={rarityPresentation.color}
-                                  label={rarityPresentation.label}
-                                  sx={rarityPresentation.sx}
-                                />
-                                {entry.item.environmentSlot && (
+                      {compatibleItems.map((entry) => {
+                        const currentlyEquipped = configuration.bySlot[selectedSlotDefinition.slotName]?.inventoryEntryId === entry.inventoryEntryId;
+                        const rarityPresentation = getShopRarityPresentation(entry.item.rarity);
+
+                        return (
+                          <Card key={entry.inventoryEntryId} variant="outlined" sx={{ borderRadius: 2 }}>
+                            <CardContent>
+                              <Stack spacing={1.5}>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                                  {entry.item.name}
+                                </Typography>
+                                <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+                                  <Chip size="small" label={entry.item.category} />
                                   <Chip
                                     size="small"
-                                    variant="outlined"
-                                    label={`Posição recomendada: ${entry.item.environmentSlot}`}
+                                    color={rarityPresentation.color}
+                                    label={rarityPresentation.label}
+                                    sx={rarityPresentation.sx}
                                   />
-                                )}
+                                  {entry.item.environmentSlot && (
+                                    <Chip
+                                      size="small"
+                                      variant="outlined"
+                                      label={`Posição recomendada: ${entry.item.environmentSlot}`}
+                                    />
+                                  )}
+                                </Stack>
+
+                                <Typography variant="caption" color="text.secondary">
+                                  {entry.item.description}
+                                </Typography>
+
+                                <Button
+                                  variant={currentlyEquipped ? 'outlined' : 'contained'}
+                                  disabled={currentlyEquipped || pendingBySlot[selectedSlotDefinition.slotName]}
+                                  onClick={() => {
+                                    void equipSlotWithInventoryItem(selectedSlotDefinition.slotName, entry.inventoryEntryId);
+                                  }}
+                                >
+                                  {currentlyEquipped ? 'Já equipado nesta posição' : 'Equipar nesta posição'}
+                                </Button>
                               </Stack>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
 
-                              <Typography variant="caption" color="text.secondary">
-                                {entry.item.description}
-                              </Typography>
-
-                              <Button
-                                variant={currentlyEquipped ? 'outlined' : 'contained'}
-                                disabled={currentlyEquipped || pendingBySlot[selectedSlotDefinition.slotName]}
-                                onClick={() => {
-                                  void equipSlotWithInventoryItem(selectedSlotDefinition.slotName, entry.inventoryEntryId);
-                                }}
-                              >
-                                {currentlyEquipped ? 'Já equipado nesta posição' : 'Equipar nesta posição'}
-                              </Button>
-                            </Stack>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-
-                    {inventoryStatus === 'empty' && (
-                      <Alert severity="info">
-                        Seu inventário está vazio. Compre itens para iniciar a personalização do ambiente.
-                      </Alert>
-                    )}
-                  </Stack>
-                )}
-              </CardContent>
-            </Card>
+                      {inventoryStatus === 'empty' && (
+                        <Alert severity="info">
+                          Seu inventário está vazio. Compre itens para iniciar a personalização do ambiente.
+                        </Alert>
+                      )}
+                    </Stack>
+                  )}
+                </CardContent>
+              </Card>
+            </Stack>
           </Stack>
         )}
       </Stack>

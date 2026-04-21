@@ -14,6 +14,13 @@ import {
 } from '@mui/material';
 import React, { useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import {
+    getInventoryApplyTargetLabel,
+    getInventoryCustomizationStatusLabel,
+    getInventoryEquipSlotLabel,
+    getInventoryEquipStatusLabel,
+} from '../../lib/inventoryPresentation';
+import { getShopCategoryLabel } from '../../lib/shopCategory';
 import { getShopRarityPresentation } from '../../lib/shopRarity';
 import { useShopStore } from '../../state/useShopStore';
 
@@ -117,7 +124,12 @@ const InventoryPage: React.FC = () => {
                     </Typography>
 
                     <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap' }}>
-                      <Chip size="small" variant="outlined" label={entry.item.category} sx={{ textTransform: 'capitalize' }} />
+                      <Chip
+                        size="small"
+                        variant="outlined"
+                        label={getShopCategoryLabel(entry.item.category)}
+                        sx={{ textTransform: 'capitalize' }}
+                      />
                       <Chip
                         size="small"
                         color={rarityPresentation.color}
@@ -132,7 +144,7 @@ const InventoryPage: React.FC = () => {
                         size="small"
                         color={entry.isEquipped ? 'success' : 'default'}
                         variant={entry.isEquipped ? 'filled' : 'outlined'}
-                        label={entry.isEquipped ? 'Equipado' : 'Não equipado'}
+                        label={getInventoryEquipStatusLabel(entry.isEquipped)}
                       />
                     </Stack>
 
@@ -144,13 +156,13 @@ const InventoryPage: React.FC = () => {
 
                     <Stack spacing={0.75}>
                       <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                        Status de personalização: {entry.isReadyForCustomization ? 'pronto para uso futuro' : 'aguardando disponibilidade'}
+                        Status de personalização: {getInventoryCustomizationStatusLabel(entry.isReadyForCustomization)}
                       </Typography>
                       <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                        Slot previsto: {entry.equipSlot ?? 'não definido'}
+                        Slot previsto: {getInventoryEquipSlotLabel(entry.equipSlot)}
                       </Typography>
                       <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                        Alvo previsto: {entry.appliedTarget ?? 'não definido'}
+                        Alvo previsto: {getInventoryApplyTargetLabel(entry.appliedTarget)}
                       </Typography>
                     </Stack>
 

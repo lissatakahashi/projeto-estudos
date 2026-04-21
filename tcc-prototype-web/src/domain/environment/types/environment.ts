@@ -134,6 +134,39 @@ export function createEmptyEnvironmentConfiguration(): UserEnvironmentConfigurat
   };
 }
 
+function normalizeToken(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\s-]+/g, '_');
+}
+
+function normalizeShopCategory(category: string): ShopItemCategory | string {
+  const normalized = normalizeToken(category);
+
+  if (normalized === 'tema') return 'theme';
+  if (normalized === 'decoracao') return 'decor';
+  if (normalized === 'emblema') return 'badge';
+  if (normalized === 'outro') return 'other';
+
+  return normalized;
+}
+
+function normalizeEnvironmentSlotName(slotName: string): EnvironmentSlotName | string {
+  const normalized = normalizeToken(slotName);
+
+  if (normalized === 'plano_de_fundo' || normalized === 'fundo') return 'background';
+  if (normalized === 'parede') return 'wall';
+  if (normalized === 'chao') return 'floor';
+  if (normalized === 'decoracao_esquerda') return 'decoration_left';
+  if (normalized === 'decoracao_direita') return 'decoration_right';
+  if (normalized === 'janela') return 'window_area';
+
+  return normalized;
+}
+
 export function isInventoryItemCompatibleWithSlot(
   item: Pick<InventoryItem, 'item'>,
   slotName: EnvironmentSlotName,
@@ -144,9 +177,17 @@ export function isInventoryItemCompatibleWithSlot(
     return false;
   }
 
-  if (item.item.environmentSlot && item.item.environmentSlot !== slotName) {
+  const normalizedSelectedSlot = normalizeEnvironmentSlotName(slotName);
+  const normalizedItemSlot = item.item.environmentSlot
+    ? normalizeEnvironmentSlotName(item.item.environmentSlot)
+    : null;
+
+  if (normalizedItemSlot && normalizedItemSlot !== normalizedSelectedSlot) {
     return false;
   }
 
-  return slotDefinition.acceptedItemCategories.includes(item.item.category);
+  const normalizedItemCategory = normalizeShopCategory(item.item.category);
+  const acceptedCategories = slotDefinition.acceptedItemCategories.map(normalizeShopCategory);
+
+  return acceptedCategories.includes(normalizedItemCategory);
 }

@@ -57,7 +57,7 @@ const ShopCatalogAdminPage: React.FC = () => {
     return (
       <Container maxWidth="md" sx={{ mt: 6, mb: 6 }}>
         <Alert severity="warning">
-          A area administrativa exige autenticacao.
+          A área administrativa exige autenticação.
         </Alert>
       </Container>
     );

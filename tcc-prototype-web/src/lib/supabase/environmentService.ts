@@ -92,3 +92,36 @@ export async function equipEnvironmentItemRpc(input: {
     return { data: null, error: { message: 'Erro inesperado ao equipar item.', originalError } };
   }
 }
+
+export async function upsertUserEnvironmentSlotDirect(input: {
+  userId: string;
+  slotName: EnvironmentSlotName;
+  inventoryEntryId: string;
+  itemId: string;
+}): Promise<{ ok: boolean; error: string | null }> {
+  try {
+    const nowIso = new Date().toISOString();
+
+    const { error } = await supabase
+      .from('userEnvironmentSlots')
+      .upsert(
+        {
+          userId: input.userId,
+          slotName: input.slotName,
+          inventoryEntryId: input.inventoryEntryId,
+          itemId: input.itemId,
+          equippedAt: nowIso,
+          updatedAt: nowIso,
+        },
+        { onConflict: 'userId,slotName' },
+      );
+
+    if (error) {
+      return { ok: false, error: 'Falha ao aplicar item no slot selecionado.' };
+    }
+
+    return { ok: true, error: null };
+  } catch {
+    return { ok: false, error: 'Erro inesperado ao aplicar item no slot.' };
+  }
+}

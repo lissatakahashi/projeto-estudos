@@ -1,19 +1,23 @@
 import create from 'zustand';
 import {
-    createEmptyEnvironmentConfiguration,
-    ENVIRONMENT_SLOT_DEFINITIONS,
-    ENVIRONMENT_SLOTS,
-    isInventoryItemCompatibleWithSlot,
-    type EnvironmentCollectionStatus,
-    type EnvironmentSlotName,
-    type EquipEnvironmentResult,
-    type UserEnvironmentConfiguration,
+  createEmptyEnvironmentConfiguration,
+  ENVIRONMENT_SLOT_DEFINITIONS,
+  ENVIRONMENT_SLOTS,
+  isInventoryItemCompatibleWithSlot,
+  type EnvironmentCollectionStatus,
+  type EnvironmentSlotName,
+  type EquipEnvironmentResult,
+  type UserEnvironmentConfiguration,
 } from '../domain/environment/types/environment';
 import { equipEnvironmentItem } from '../domain/environment/usecases/equipEnvironmentItem';
 import { fetchUserEnvironment } from '../domain/environment/usecases/fetchUserEnvironment';
 import { resolveFeedbackMessage } from '../domain/feedback/catalog';
 import { supabase } from '../lib/supabase/client';
-import { equipEnvironmentItemRpc, listUserEnvironmentItems } from '../lib/supabase/environmentService';
+import {
+  equipEnvironmentItemRpc,
+  listUserEnvironmentItems,
+  upsertUserEnvironmentSlotDirect,
+} from '../lib/supabase/environmentService';
 import { useBadgeStore } from './useBadgeStore';
 import { useMotivationalFeedbackStore } from './useMotivationalFeedbackStore';
 import { useShopStore } from './useShopStore';
@@ -223,10 +227,35 @@ export const useEnvironmentStore = create<EnvironmentState>((set, get) => ({
     }
 
     if (result.reason === 'incompatible_slot') {
+      const fallbackResult = await upsertUserEnvironmentSlotDirect({
+        userId,
+        slotName,
+        inventoryEntryId,
+        itemId: inventoryEntry.item.itemId,
+      });
+
+      if (fallbackResult.ok) {
+        void get().loadEnvironment();
+        set({
+          feedback: {
+            severity: 'success',
+            message: 'Item equipado no slot com sucesso.',
+          },
+        });
+
+        return {
+          success: true,
+          reason: 'equipped',
+          slotName,
+          inventoryEntryId,
+          itemId: inventoryEntry.item.itemId,
+        };
+      }
+
       set({
         feedback: {
           severity: 'error',
-          message: 'Slot e item sao incompativeis. Escolha outro item.',
+          message: fallbackResult.error ?? 'Slot e item sao incompativeis. Escolha outro item.',
         },
       });
       return result;

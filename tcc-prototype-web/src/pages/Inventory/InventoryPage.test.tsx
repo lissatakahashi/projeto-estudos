@@ -98,7 +98,10 @@ describe('InventoryPage', () => {
 
     expect(screen.getByText(/Tema Floresta Calma/i)).toBeTruthy();
     expect(screen.getByText(/Tema visual para estudo/i)).toBeTruthy();
+    expect(screen.getByText(/^Tema$/i)).toBeTruthy();
     expect(screen.getByText(/Qtd: 1/i)).toBeTruthy();
-    expect(screen.getByText(/pronto para uso futuro/i)).toBeTruthy();
+    expect(screen.getByText(/Pronto para personalizacao/i)).toBeTruthy();
+    expect(screen.getByText(/Slot previsto: Ambiente/i)).toBeTruthy();
+    expect(screen.getByText(/Alvo previsto: Ambiente/i)).toBeTruthy();
   });
 });
