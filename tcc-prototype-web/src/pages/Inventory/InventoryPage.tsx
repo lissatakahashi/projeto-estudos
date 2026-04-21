@@ -1,19 +1,20 @@
 import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  CardMedia,
-  Chip,
-  CircularProgress,
-  Container,
-  Divider,
-  Stack,
-  Typography,
+    Alert,
+    Box,
+    Button,
+    Card,
+    CardContent,
+    CardMedia,
+    Chip,
+    CircularProgress,
+    Container,
+    Divider,
+    Stack,
+    Typography,
 } from '@mui/material';
 import React, { useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import { getShopRarityPresentation } from '../../lib/shopRarity';
 import { useShopStore } from '../../state/useShopStore';
 
 const InventoryPage: React.FC = () => {
@@ -49,7 +50,7 @@ const InventoryPage: React.FC = () => {
 
         {!userId && (
           <Alert severity="info">
-            Faca login para visualizar seu inventario.
+            Faça login para visualizar seu inventário.
             {' '}
             <Typography component={RouterLink} to="/login" sx={{ ml: 1, fontWeight: 600 }}>
               Ir para login
@@ -61,7 +62,7 @@ const InventoryPage: React.FC = () => {
 
         {userId && loadingInventory && (
           <Box sx={{ py: 8, display: 'grid', placeItems: 'center' }}>
-            <CircularProgress aria-label="Carregando inventario" />
+            <CircularProgress aria-label="Carregando inventário" />
           </Box>
         )}
 
@@ -70,10 +71,10 @@ const InventoryPage: React.FC = () => {
             <CardContent>
               <Stack spacing={1.5}>
                 <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                  Voce ainda nao possui itens
+                  Você ainda não possui itens
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Conclua sessoes Pomodoro, acumule moedas e compre itens na loja para comecar sua personalizacao.
+                  Conclua sessões Pomodoro, acumule moedas e compre itens na loja para começar sua personalização.
                 </Typography>
                 <Box>
                   <Button component={RouterLink} to="/shop" variant="contained">
@@ -97,57 +98,69 @@ const InventoryPage: React.FC = () => {
               gap: 2,
             }}
           >
-            {inventory.map((entry) => (
-              <Card key={entry.inventoryEntryId} variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
-                {entry.item.imageUrl && (
-                  <CardMedia
-                    component="img"
-                    image={entry.item.imageUrl}
-                    height="140"
-                    alt={`Visual do item ${entry.item.name}`}
-                  />
-                )}
-                <CardContent>
-                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                    {entry.item.name}
-                  </Typography>
+            {inventory.map((entry) => {
+              const rarityPresentation = getShopRarityPresentation(entry.item.rarity);
 
-                  <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap' }}>
-                    <Chip size="small" variant="outlined" label={entry.item.category} sx={{ textTransform: 'capitalize' }} />
-                    <Chip size="small" color="primary" label={entry.item.rarity} sx={{ textTransform: 'capitalize' }} />
-                    <Chip size="small" color="success" label={`Qtd: ${entry.quantity}`} />
-                    <Chip
-                      size="small"
-                      color={entry.isEquipped ? 'success' : 'default'}
-                      variant={entry.isEquipped ? 'filled' : 'outlined'}
-                      label={entry.isEquipped ? 'Equipado' : 'Não equipado'}
+              return (
+                <Card key={entry.inventoryEntryId} variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
+                  {entry.item.imageUrl && (
+                    <CardMedia
+                      component="img"
+                      image={entry.item.imageUrl}
+                      height="140"
+                      alt={`Visual do item ${entry.item.name}`}
                     />
-                  </Stack>
-
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                    {entry.item.description}
-                  </Typography>
-
-                  <Divider sx={{ my: 1.5 }} />
-
-                  <Stack spacing={0.75}>
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                      Status de personalização: {entry.isReadyForCustomization ? 'pronto para uso futuro' : 'aguardando disponibilidade'}
+                  )}
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                      {entry.item.name}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                      Slot previsto: {entry.equipSlot ?? 'não definido'}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                      Alvo previsto: {entry.appliedTarget ?? 'não definido'}
-                    </Typography>
-                  </Stack>
 
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
-                    Adquirido em: {new Date(entry.acquiredAt).toLocaleString('pt-BR')}
-                  </Typography>
-                </CardContent>
-              </Card>
-            ))}
+                    <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap' }}>
+                      <Chip size="small" variant="outlined" label={entry.item.category} sx={{ textTransform: 'capitalize' }} />
+                      <Chip
+                        size="small"
+                        color={rarityPresentation.color}
+                        label={rarityPresentation.label}
+                        sx={{
+                          textTransform: 'capitalize',
+                          ...rarityPresentation.sx,
+                        }}
+                      />
+                      <Chip size="small" color="success" label={`Qtd: ${entry.quantity}`} />
+                      <Chip
+                        size="small"
+                        color={entry.isEquipped ? 'success' : 'default'}
+                        variant={entry.isEquipped ? 'filled' : 'outlined'}
+                        label={entry.isEquipped ? 'Equipado' : 'Não equipado'}
+                      />
+                    </Stack>
+
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                      {entry.item.description}
+                    </Typography>
+
+                    <Divider sx={{ my: 1.5 }} />
+
+                    <Stack spacing={0.75}>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                        Status de personalização: {entry.isReadyForCustomization ? 'pronto para uso futuro' : 'aguardando disponibilidade'}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                        Slot previsto: {entry.equipSlot ?? 'não definido'}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                        Alvo previsto: {entry.appliedTarget ?? 'não definido'}
+                      </Typography>
+                    </Stack>
+
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
+                      Adquirido em: {new Date(entry.acquiredAt).toLocaleString('pt-BR')}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </Box>
         )}
       </Stack>

@@ -12,6 +12,7 @@ describe('Pomodoro settings defaults and validation', () => {
       shortBreakDurationMinutes: 5,
       longBreakDurationMinutes: 15,
       cyclesBeforeLongBreak: 4,
+      keepSessionRunningOnHiddenTab: false,
     });
   });
 
@@ -21,6 +22,7 @@ describe('Pomodoro settings defaults and validation', () => {
       shortBreakDurationMinutes: '-1',
       longBreakDurationMinutes: '2',
       cyclesBeforeLongBreak: '13',
+      keepSessionRunningOnHiddenTab: false,
     });
 
     expect(result.isValid).toBe(false);
@@ -36,11 +38,13 @@ describe('Pomodoro settings defaults and validation', () => {
       shortBreakDurationMinutes: 20,
       longBreakDurationMinutes: 10,
       cyclesBeforeLongBreak: 0,
+      keepSessionRunningOnHiddenTab: true,
     });
 
     expect(sanitized.focusDurationMinutes).toBe(120);
     expect(sanitized.shortBreakDurationMinutes).toBe(20);
     expect(sanitized.longBreakDurationMinutes).toBe(20);
     expect(sanitized.cyclesBeforeLongBreak).toBe(1);
+    expect(sanitized.keepSessionRunningOnHiddenTab).toBe(true);
   });
 });

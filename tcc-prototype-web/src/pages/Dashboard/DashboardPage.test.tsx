@@ -55,7 +55,7 @@ describe('DashboardPage', () => {
       </BrowserRouter>,
     );
 
-    expect(screen.getByRole('heading', { name: /Dashboard de Progresso/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /Painel de progresso/i })).toBeTruthy();
     expect(screen.getByText(/Complete sua primeira sessão para começar a acompanhar seu progresso/i)).toBeTruthy();
     expect(screen.getByText('0 moedas')).toBeTruthy();
   });

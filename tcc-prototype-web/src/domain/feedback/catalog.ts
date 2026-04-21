@@ -24,7 +24,7 @@ const feedbackCatalog: Record<MotivationalFeedbackEvent, CatalogEntry> = {
     variant: 'success',
     durationMs: 4200,
     templates: [
-      () => 'Sessao concluida com sucesso. Excelente consistencia.',
+      () => 'Sessão concluída com sucesso. Excelente consistência.',
       () => 'Bloco de foco finalizado. Seu progresso está evoluindo.',
     ],
   },
@@ -33,7 +33,7 @@ const feedbackCatalog: Record<MotivationalFeedbackEvent, CatalogEntry> = {
     durationMs: 5200,
     templates: [
       (payload) => `Sessão interrompida por ${payload.invalidReasonLabel ?? 'abandono'}. O progresso não foi contabilizado.`,
-      (payload) => `A sessão foi invalidada por ${payload.invalidReasonLabel ?? 'interrupcao'}. Sem contagem neste ciclo.`,
+      (payload) => `A sessão foi invalidada por ${payload.invalidReasonLabel ?? 'interrupção'}. Sem contagem neste ciclo.`,
     ],
   },
   coins_earned: {
@@ -48,8 +48,8 @@ const feedbackCatalog: Record<MotivationalFeedbackEvent, CatalogEntry> = {
     variant: 'success',
     durationMs: 5200,
     templates: [
-      (payload) => `Nova conquista desbloqueada: ${payload.badgeName ?? 'Badge especial'}.`,
-      (payload) => `Você ganhou a badge ${payload.badgeName ?? 'especial'}. Continue evoluindo.`,
+      (payload) => `Nova conquista desbloqueada: ${payload.badgeName ?? 'Insígnia especial'}.`,
+      (payload) => `Você ganhou a insígnia ${payload.badgeName ?? 'especial'}. Continue evoluindo.`,
     ],
   },
   shop_item_purchased: {
@@ -57,14 +57,14 @@ const feedbackCatalog: Record<MotivationalFeedbackEvent, CatalogEntry> = {
     durationMs: 3800,
     templates: [
       (payload) => `Compra concluída: ${payload.itemName ?? 'item'} foi adicionado ao inventário.`,
-      (payload) => `Novo recurso desbloqueado: ${payload.itemName ?? 'item'} agora esta no seu inventario.`,
+      (payload) => `Novo recurso desbloqueado: ${payload.itemName ?? 'item'} agora está no seu inventário.`,
     ],
   },
   environment_item_equipped: {
     variant: 'success',
     durationMs: 3600,
     templates: [
-      (payload) => `${payload.itemName ?? 'Item'} equipado${payload.slotLabel ? ` no slot ${payload.slotLabel}` : ''}.`,
+      (payload) => `${payload.itemName ?? 'Item'} equipado${payload.slotLabel ? ` na posição ${payload.slotLabel}` : ''}.`,
       (payload) => `Ambiente atualizado com ${payload.itemName ?? 'item'}. Boa personalização.`,
     ],
   },
@@ -72,24 +72,24 @@ const feedbackCatalog: Record<MotivationalFeedbackEvent, CatalogEntry> = {
     variant: 'motivational',
     durationMs: 3600,
     templates: [
-      (payload) => `Pet alimentado com sucesso. Humor atual: ${payload.petMood ?? 'estavel'}.`,
-      () => 'Cuidado registrado. Seu pet acompanha sua jornada de estudos.',
+      (payload) => `Personagem alimentado com sucesso. Humor atual: ${payload.petMood ?? 'estável'}.`,
+      () => 'Cuidado registrado. Seu personagem acompanha sua jornada de estudos.',
     ],
   },
   dashboard_empty: {
     variant: 'info',
     durationMs: 4600,
     templates: [
-      () => 'Seu dashboard está pronto. Conclua a primeira sessão para gerar progresso real.',
-      () => 'Comece com um bloco de foco para liberar suas metricas de evolucao.',
+      () => 'Seu painel de progresso está pronto. Conclua a primeira sessão para gerar progresso real.',
+      () => 'Comece com um bloco de foco para liberar suas métricas de evolução.',
     ],
   },
   first_achievement_unlocked: {
     variant: 'motivational',
     durationMs: 5200,
     templates: [
-      (payload) => `Primeira conquista desbloqueada: ${payload.achievementLabel ?? 'Primeira sessao concluida'}.`,
-      () => 'Marco inicial atingido. Continue para consolidar o habito de estudo.',
+      (payload) => `Primeira conquista desbloqueada: ${payload.achievementLabel ?? 'Primeira sessão concluída'}.`,
+      () => 'Marco inicial atingido. Continue para consolidar o hábito de estudo.',
     ],
   },
 };

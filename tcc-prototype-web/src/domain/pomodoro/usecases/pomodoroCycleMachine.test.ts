@@ -3,6 +3,7 @@ import { DEFAULT_POMODORO_SETTINGS } from '../constants/pomodoroSettings';
 import {
     completeCurrentPhase,
     createIdlePomodoroCycleState,
+    getNextModeForActivePhase,
     getNextPhaseAfterCompletion,
     moveToNextPhase,
     pausePomodoroCycle,
@@ -23,8 +24,27 @@ describe('pomodoroCycleMachine', () => {
 
     expect(running.phase).toBe('focus');
     expect(running.activeMode).toBe('focus');
+    expect(running.nextMode).toBe('short_break');
     expect(running.remainingSeconds).toBe(30 * 60);
     expect(running.phaseDurationSeconds).toBe(30 * 60);
+  });
+
+  it('computes next mode for focus as long break at threshold', () => {
+    const settings = {
+      ...DEFAULT_POMODORO_SETTINGS,
+      cyclesBeforeLongBreak: 2,
+    };
+
+    const nextMode = getNextModeForActivePhase(
+      'focus',
+      {
+        ...createIdlePomodoroCycleState(settings),
+        focusSessionsCompletedInCycle: 1,
+      },
+      settings,
+    );
+
+    expect(nextMode).toBe('long_break');
   });
 
   it('transitions from focus to short break before reaching long-break threshold', () => {

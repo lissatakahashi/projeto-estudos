@@ -1,35 +1,21 @@
 import {
-    Alert,
-    Box,
-    Button,
-    Card,
-    CardActions,
-    CardContent,
-    Chip,
-    CircularProgress,
-    Container,
-    Stack,
-    Typography,
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Container,
+  Stack,
+  Typography,
 } from '@mui/material';
 import React, { useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import { getShopRarityPresentation } from '../../lib/shopRarity';
 import { useShopStore } from '../../state/useShopStore';
 import { useWalletStore } from '../../state/useWalletStore';
-
-const rarityColorByKey: Record<string, 'default' | 'primary' | 'secondary' | 'success' | 'warning'> = {
-  common: 'default',
-  rare: 'primary',
-  epic: 'secondary',
-  legendary: 'warning',
-};
-
-const epicRaritySx = {
-  bgcolor: '#7E57C2',
-  color: '#FFFFFF',
-  '& .MuiChip-label': {
-    color: '#FFFFFF',
-  },
-};
 
 const ShopPage: React.FC = () => {
   const userId = useShopStore((s) => s.userId);
@@ -154,6 +140,7 @@ const ShopPage: React.FC = () => {
             }}
           >
             {items.map((item) => {
+              const rarityPresentation = getShopRarityPresentation(item.rarity);
               const owned = isOwned(item.itemId);
               const pending = Boolean(pendingPurchaseByItemId[item.itemId]);
               const hasInsufficientBalance = !walletLoading && walletBalance < item.price;
@@ -185,11 +172,11 @@ const ShopPage: React.FC = () => {
                       </Typography>
                       <Chip
                         size="small"
-                        color={rarityColorByKey[item.rarity] ?? 'default'}
-                        label={item.rarity}
+                        color={rarityPresentation.color}
+                        label={rarityPresentation.label}
                         sx={{
                           textTransform: 'capitalize',
-                          ...(item.rarity === 'epic' ? epicRaritySx : {}),
+                          ...rarityPresentation.sx,
                         }}
                       />
                     </Stack>

@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS public."userPomodoroSettings" (
     "shortBreakDurationMinutes" INTEGER NOT NULL DEFAULT 5 CHECK ("shortBreakDurationMinutes" BETWEEN 1 AND 30),
     "longBreakDurationMinutes" INTEGER NOT NULL DEFAULT 15 CHECK ("longBreakDurationMinutes" BETWEEN 5 AND 60),
     "cyclesBeforeLongBreak" INTEGER NOT NULL DEFAULT 4 CHECK ("cyclesBeforeLongBreak" BETWEEN 1 AND 12),
+    "keepSessionRunningOnHiddenTab" BOOLEAN NOT NULL DEFAULT FALSE,
     "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CHECK ("longBreakDurationMinutes" >= "shortBreakDurationMinutes")

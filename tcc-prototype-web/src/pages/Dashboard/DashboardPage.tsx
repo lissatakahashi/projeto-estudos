@@ -79,7 +79,7 @@ const DashboardPage: React.FC = () => {
           <CardContent>
             <Stack spacing={2}>
               <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
-                Dashboard de Progresso
+                Painel de progresso
               </Typography>
               <Typography variant="body1" color="text.secondary">
                 Faça login para visualizar suas métricas reais de estudo, moedas e evolução gamificada.
@@ -101,7 +101,7 @@ const DashboardPage: React.FC = () => {
       <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
         <Box sx={{ py: 10, display: 'grid', placeItems: 'center' }}>
           <Stack spacing={2} alignItems="center">
-            <CircularProgress aria-label="Carregando dashboard" />
+            <CircularProgress aria-label="Carregando painel de progresso" />
             <Typography variant="body2" color="text.secondary">
               Carregando progresso acadêmico...
             </Typography>
@@ -115,7 +115,7 @@ const DashboardPage: React.FC = () => {
     return (
       <Container maxWidth="md" sx={{ mt: 4, mb: 6 }}>
         <Stack spacing={2}>
-          <Alert severity="error">{error ?? 'Não foi possível carregar o dashboard.'}</Alert>
+          <Alert severity="error">{error ?? 'Não foi possível carregar o painel de progresso.'}</Alert>
           <Box>
             <Button onClick={() => { void refresh(); }} variant="outlined">
               Tentar novamente
@@ -133,7 +133,7 @@ const DashboardPage: React.FC = () => {
       <Stack spacing={3}>
         <Box>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
-            Dashboard de Progresso
+            Painel de progresso
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
             Acompanhe sua evolução em foco, economia gamificada e engajamento recente.

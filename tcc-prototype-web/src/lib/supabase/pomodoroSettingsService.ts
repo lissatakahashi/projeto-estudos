@@ -20,6 +20,7 @@ export function mapRecordToPomodoroSettings(record: PomodoroSettingsRow): Pomodo
     shortBreakDurationMinutes: record.shortBreakDurationMinutes,
     longBreakDurationMinutes: record.longBreakDurationMinutes,
     cyclesBeforeLongBreak: record.cyclesBeforeLongBreak,
+    keepSessionRunningOnHiddenTab: record.keepSessionRunningOnHiddenTab,
   });
 }
 
@@ -30,6 +31,7 @@ export function mapSettingsToRecord(userId: string, settings: PomodoroSettings):
     shortBreakDurationMinutes: settings.shortBreakDurationMinutes,
     longBreakDurationMinutes: settings.longBreakDurationMinutes,
     cyclesBeforeLongBreak: settings.cyclesBeforeLongBreak,
+    keepSessionRunningOnHiddenTab: settings.keepSessionRunningOnHiddenTab,
   };
 }
 

@@ -11,14 +11,23 @@ import type { PomodoroSettings } from '../types/PomodoroSettings';
 
 const DEFAULT_MODE: PomodoroMode = 'focus';
 
+export function getNextModeForActivePhase(
+  activeMode: PomodoroMode,
+  currentState: PomodoroCycleSnapshot,
+  settings: PomodoroSettings,
+): PomodoroMode {
+  return getNextPhaseAfterCompletion(activeMode, currentState, settings).nextMode;
+}
+
 function createRunningState(base: PomodoroCycleSnapshot, mode: PomodoroMode, settings: PomodoroSettings): PomodoroCycleState {
   const durationSeconds = getModeDurationSeconds(settings, mode);
+  const nextMode = getNextModeForActivePhase(mode, base, settings);
 
   return {
     ...base,
     phase: mode,
     activeMode: mode,
-    nextMode: mode,
+    nextMode,
     phaseDurationSeconds: durationSeconds,
     remainingSeconds: durationSeconds,
   };
@@ -95,7 +104,7 @@ export function resumePomodoroCycle(currentState: PomodoroCycleSnapshot): Pomodo
   return {
     ...currentState,
     phase: currentState.activeMode,
-    nextMode: currentState.activeMode,
+    nextMode: currentState.nextMode,
   };
 }
 

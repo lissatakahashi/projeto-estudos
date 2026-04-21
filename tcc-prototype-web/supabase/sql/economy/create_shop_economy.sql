@@ -20,10 +20,6 @@ CREATE TABLE IF NOT EXISTS public."userInventory" (
     "userId" UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     "itemId" UUID NOT NULL REFERENCES public."shopItems"("itemId") ON DELETE RESTRICT,
     "quantity" INTEGER NOT NULL DEFAULT 1 CHECK ("quantity" > 0),
-    "isEquipped" BOOLEAN NOT NULL DEFAULT FALSE,
-    "equipSlot" TEXT CHECK ("equipSlot" IN ('environment', 'avatar', 'pet', 'badge')),
-    "appliedTarget" TEXT CHECK ("appliedTarget" IN ('environment', 'character', 'pet', 'none')),
-    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     "purchaseId" UUID NOT NULL,
     "walletTransactionId" UUID NOT NULL REFERENCES public."walletTransactions"("transactionId") ON DELETE RESTRICT,
     "acquiredAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -35,10 +31,6 @@ CREATE TABLE IF NOT EXISTS public."userInventory" (
 
 CREATE INDEX IF NOT EXISTS user_inventory_user_acquired_idx
     ON public."userInventory"("userId", "acquiredAt" DESC);
-
-CREATE UNIQUE INDEX IF NOT EXISTS user_inventory_one_equipped_per_slot_idx
-    ON public."userInventory"("userId", "equipSlot")
-    WHERE "isEquipped" = TRUE AND "equipSlot" IS NOT NULL;
 
 DROP TRIGGER IF EXISTS shop_items_set_updated_at ON public."shopItems";
 CREATE TRIGGER shop_items_set_updated_at
@@ -207,8 +199,8 @@ VALUES
         'tema-floresta-calma',
         'Tema visual com paleta natural para reduzir fadiga visual durante o estudo.',
         20,
-        'theme',
-        'common',
+        'tema',
+        'comum',
         'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=600&q=80',
         TRUE
     ),
@@ -218,7 +210,7 @@ VALUES
         'Avatar exclusivo para representar consistência e foco acadêmico.',
         35,
         'avatar',
-        'rare',
+        'raro',
         'https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&w=600&q=80',
         TRUE
     ),
@@ -228,7 +220,7 @@ VALUES
         'Badge cosmética para destacar sessões de estudo prolongadas.',
         50,
         'badge',
-        'epic',
+        'épico',
         'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=600&q=80',
         TRUE
     ),
@@ -237,8 +229,8 @@ VALUES
         'kit-ambiente-biblioteca',
         'Pacote visual com elementos de biblioteca para personalizar o ambiente.',
         70,
-        'decor',
-        'legendary',
+        'decoração',
+        'lendário',
         'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=600&q=80',
         TRUE
     )

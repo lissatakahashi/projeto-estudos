@@ -167,6 +167,7 @@ export type Database = {
           shortBreakDurationMinutes: number
           longBreakDurationMinutes: number
           cyclesBeforeLongBreak: number
+          keepSessionRunningOnHiddenTab: boolean
           createdAt: string
           updatedAt: string
         }
@@ -176,6 +177,7 @@ export type Database = {
           shortBreakDurationMinutes?: number
           longBreakDurationMinutes?: number
           cyclesBeforeLongBreak?: number
+          keepSessionRunningOnHiddenTab?: boolean
           createdAt?: string
           updatedAt?: string
         }
@@ -185,6 +187,7 @@ export type Database = {
           shortBreakDurationMinutes?: number
           longBreakDurationMinutes?: number
           cyclesBeforeLongBreak?: number
+          keepSessionRunningOnHiddenTab?: boolean
           createdAt?: string
           updatedAt?: string
         }

@@ -14,6 +14,7 @@ import { resolveFocusSessionCompletion } from '../domain/pomodoro/usecases/focus
 import {
     completeCurrentPhase,
     createIdlePomodoroCycleState,
+    getNextModeForActivePhase,
     moveToNextPhase,
     pausePomodoroCycle,
     resetPomodoroCycle,
@@ -151,9 +152,62 @@ function mapVariantToPomodoroSeverity(variant: FeedbackVariant): PomodoroComplet
   return 'success';
 }
 
+function extractSupabaseErrorDetail(error: unknown): string | null {
+  if (!error || typeof error !== 'object') {
+    return null;
+  }
+
+  const maybeError = error as {
+    code?: string;
+    message?: string;
+    details?: string;
+    hint?: string;
+  };
+
+  const code = maybeError.code ?? '';
+  if (code === '42703') {
+    return 'Estrutura do banco desatualizada: execute as migrations de configuracao Pomodoro no Supabase.';
+  }
+
+  if (code === '42501') {
+    return 'Permissao negada no banco (RLS). Faca login novamente e tente salvar.';
+  }
+
+  if (code === 'PGRST301' || code === '401') {
+    return 'Sessao de autenticacao expirada. Faca login novamente.';
+  }
+
+  const details = maybeError.details?.trim();
+  if (details) {
+    return details;
+  }
+
+  const hint = maybeError.hint?.trim();
+  if (hint) {
+    return hint;
+  }
+
+  const message = maybeError.message?.trim();
+  if (message) {
+    return message;
+  }
+
+  return null;
+}
+
 function hydrateCycleState(parsed: { cycleState?: PomodoroCycleState; pomodoro?: Pomodoro | null }, settings: PomodoroSettings): PomodoroCycleState {
   if (parsed.cycleState) {
-    return parsed.cycleState;
+    const persisted = parsed.cycleState;
+    if (persisted.phase === 'focus' || persisted.phase === 'short_break' || persisted.phase === 'long_break' || persisted.phase === 'paused') {
+      const activeMode = persisted.phase === 'paused' ? persisted.activeMode : persisted.phase;
+      return {
+        ...persisted,
+        activeMode,
+        nextMode: getNextModeForActivePhase(activeMode, persisted, settings),
+      };
+    }
+
+    return persisted;
   }
 
   const fallback = createIdlePomodoroCycleState(settings);
@@ -167,7 +221,7 @@ function hydrateCycleState(parsed: { cycleState?: PomodoroCycleState; pomodoro?:
     ...fallback,
     phase: persistedPomodoro.status === 'paused' ? 'paused' : persistedPomodoro.mode,
     activeMode: persistedPomodoro.mode,
-    nextMode: persistedPomodoro.mode,
+    nextMode: getNextModeForActivePhase(persistedPomodoro.mode, fallback, settings),
     phaseDurationSeconds: persistedPomodoro.duration,
     remainingSeconds: persistedPomodoro.remaining,
   };
@@ -755,10 +809,13 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
     if (error) {
       const localSettings = loadPomodoroSettingsFromLocalStorage();
       const normalized = sanitizePomodoroSettings(localSettings);
+      const detail = extractSupabaseErrorDetail(error.originalError);
       set({
         settings: normalized,
         settingsLoading: false,
-        settingsError: 'Nao foi possivel carregar do servidor. Usando configuracao local.',
+        settingsError: detail
+          ? `Nao foi possivel carregar do servidor. Usando configuracao local. Motivo: ${detail}`
+          : 'Nao foi possivel carregar do servidor. Usando configuracao local.',
       });
       savePomodoroSettingsToLocalStorage(normalized);
       return;
@@ -830,9 +887,12 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
     const { data, error } = await upsertUserPomodoroSettings(s.userId, normalized);
 
     if (error || !data) {
+      const detail = extractSupabaseErrorDetail(error?.originalError);
       set({
         settingsSaving: false,
-        settingsError: 'Nao foi possivel salvar no servidor. Tente novamente.',
+        settingsError: detail
+          ? `Nao foi possivel salvar no servidor. Motivo: ${detail}`
+          : 'Nao foi possivel salvar no servidor. Tente novamente.',
       });
       return false;
     }
@@ -844,7 +904,7 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
       settingsSuccessMessage:
         s.pomodoro && s.pomodoro.status !== 'finished'
           ? 'Configuracao salva. A sessao atual foi mantida e as novas duracoes valem para as proximas sessoes.'
-          : 'Configuracao salva com sucesso.',
+          : 'Configuração salva com sucesso.',
     });
 
     savePomodoroSettingsToLocalStorage(persisted);

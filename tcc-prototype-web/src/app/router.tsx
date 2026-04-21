@@ -1,7 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import AppShell from '../components/layout/AppShell';
+import {
+    isPomodoroProgressAtRisk,
+    POMODORO_EXIT_CONFIRMATION_MESSAGE,
+} from '../domain/pomodoro/usecases/pomodoroExitProtection';
 import AboutPage from '../pages/About/AboutPage';
+import ShopCatalogAdminPage from '../pages/Admin/ShopCatalogAdminPage';
 import ForgotPasswordPage from '../pages/Auth/ForgotPasswordPage';
 import LoginPage from '../pages/Auth/LoginPage';
 import RegisterPage from '../pages/Auth/RegisterPage';
@@ -18,21 +23,27 @@ import { usePomodoroStore } from '../state/usePomodoroStore';
 
 const PomodoroAbandonmentRouteGuard: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const previousPathnameRef = useRef(location.pathname);
 
   useEffect(() => {
     const previous = previousPathnameRef.current;
     if (previous === '/pomodoro' && location.pathname !== '/pomodoro') {
       const state = usePomodoroStore.getState();
-      const active = state.pomodoro;
+      if (isPomodoroProgressAtRisk(state.pomodoro)) {
+        const confirmed = window.confirm(POMODORO_EXIT_CONFIRMATION_MESSAGE);
+        if (!confirmed) {
+          previousPathnameRef.current = '/pomodoro';
+          navigate('/pomodoro', { replace: true });
+          return;
+        }
 
-      if (active && active.status !== 'finished' && active.mode === 'focus') {
         void state.invalidateActivePomodoro('route_change');
       }
     }
 
     previousPathnameRef.current = location.pathname;
-  }, [location.pathname]);
+  }, [location.pathname, navigate]);
 
   return null;
 };
@@ -48,14 +59,15 @@ const Router: React.FC = () => (
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/pomodoro" element={<PomodoroPage />} />
       <Route path="/shop" element={<ShopPage />} />
+      <Route path="/admin/shop-items" element={<ShopCatalogAdminPage />} />
       <Route path="/inventory" element={<InventoryPage />} />
       <Route path="/environment" element={<EnvironmentPage />} />
       <Route path="/pet" element={<PetPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/history" element={<DashboardPage />} />
-      <Route path="/settings" element={<div>Settings (placeholder)</div>} />
-      <Route path="/privacy" element={<div>Privacy (placeholder)</div>} />
-      <Route path="/terms" element={<div>Terms (placeholder)</div>} />
+      <Route path="/settings" element={<div>Configurações (em breve)</div>} />
+      <Route path="/privacy" element={<div>Privacidade (em breve)</div>} />
+      <Route path="/terms" element={<div>Termos de uso (em breve)</div>} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/sobre" element={<AboutPage />} />
       <Route path="/metodologia" element={<MetodologiaPage />} />

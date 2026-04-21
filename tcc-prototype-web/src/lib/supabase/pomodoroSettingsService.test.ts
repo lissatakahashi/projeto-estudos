@@ -1,8 +1,14 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
     mapRecordToPomodoroSettings,
     mapSettingsToRecord,
 } from './pomodoroSettingsService';
+
+vi.mock('./client', () => ({
+  supabase: {
+    from: vi.fn(),
+  },
+}));
 
 describe('pomodoroSettingsService mappers', () => {
   it('maps domain settings to insert payload', () => {
@@ -11,6 +17,7 @@ describe('pomodoroSettingsService mappers', () => {
       shortBreakDurationMinutes: 6,
       longBreakDurationMinutes: 18,
       cyclesBeforeLongBreak: 3,
+      keepSessionRunningOnHiddenTab: true,
     });
 
     expect(payload).toEqual({
@@ -19,6 +26,7 @@ describe('pomodoroSettingsService mappers', () => {
       shortBreakDurationMinutes: 6,
       longBreakDurationMinutes: 18,
       cyclesBeforeLongBreak: 3,
+      keepSessionRunningOnHiddenTab: true,
     });
   });
 
@@ -29,6 +37,7 @@ describe('pomodoroSettingsService mappers', () => {
       shortBreakDurationMinutes: 10,
       longBreakDurationMinutes: 5,
       cyclesBeforeLongBreak: 20,
+      keepSessionRunningOnHiddenTab: null as unknown as boolean,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
@@ -37,5 +46,6 @@ describe('pomodoroSettingsService mappers', () => {
     expect(mapped.shortBreakDurationMinutes).toBe(10);
     expect(mapped.longBreakDurationMinutes).toBe(10);
     expect(mapped.cyclesBeforeLongBreak).toBe(12);
+    expect(mapped.keepSessionRunningOnHiddenTab).toBe(false);
   });
 });

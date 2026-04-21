@@ -51,6 +51,19 @@ Protótipo paralelo sem backend. Guardamos preferências e progresso em localSto
 - Preparacao para evolucao: inventario possui campos para equipar/aplicar item (`isEquipped`, `equipSlot`, `appliedTarget`), mantendo base para personalizacao de ambiente/personagem/pet.
 - Integracao imediata: apos compra, a loja dispara recarga do inventario e a store usa sincronizacao realtime para refletir mudancas sem refresh manual.
 
+## Admin da Loja e RLS (Supabase)
+- O CRUD administrativo de itens depende de policies RLS de escrita na tabela `shopItems`.
+- Se aparecer erro como `new row violates row-level security policy for table \"shopItems\"`, aplique o script:
+
+`supabase/sql/economy/alter_shop_items_admin_policies.sql`
+
+- Como aplicar no Supabase:
+1. Abra o projeto no painel do Supabase.
+2. Entre em `SQL Editor`.
+3. Cole e execute o conteudo de `alter_shop_items_admin_policies.sql`.
+
+- Observacao: este script libera escrita para usuarios autenticados (modo prototipo). Para producao, substitua por policy restrita a papel admin.
+
 ## Pet Virtual e Politica de Alimentacao
 - O pet virtual e persistido por usuario em `userPetStates`, com um registro por conta.
 - Politica adotada para o TCC: alimentar custa `5` moedas e possui cooldown de `60` segundos.

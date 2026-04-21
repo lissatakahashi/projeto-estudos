@@ -3,13 +3,22 @@ export type PomodoroSettings = {
   shortBreakDurationMinutes: number;
   longBreakDurationMinutes: number;
   cyclesBeforeLongBreak: number;
+  keepSessionRunningOnHiddenTab: boolean;
 };
 
 export type PomodoroSettingsField = keyof PomodoroSettings;
 
-export type PomodoroSettingsDraft = Record<PomodoroSettingsField, string>;
+export type PomodoroNumericSettingsField = Exclude<PomodoroSettingsField, 'keepSessionRunningOnHiddenTab'>;
 
-export type PomodoroSettingsErrors = Partial<Record<PomodoroSettingsField, string>>;
+export type PomodoroSettingsDraft = {
+  focusDurationMinutes: string;
+  shortBreakDurationMinutes: string;
+  longBreakDurationMinutes: string;
+  cyclesBeforeLongBreak: string;
+  keepSessionRunningOnHiddenTab: boolean;
+};
+
+export type PomodoroSettingsErrors = Partial<Record<PomodoroNumericSettingsField, string>>;
 
 export type PomodoroSettingsValidationResult = {
   isValid: boolean;
@@ -17,7 +26,7 @@ export type PomodoroSettingsValidationResult = {
   errors: PomodoroSettingsErrors;
 };
 
-export const POMODORO_SETTINGS_FIELD_LABELS: Record<PomodoroSettingsField, string> = {
+export const POMODORO_SETTINGS_FIELD_LABELS: Record<PomodoroNumericSettingsField, string> = {
   focusDurationMinutes: 'Duracao do foco',
   shortBreakDurationMinutes: 'Duracao da pausa curta',
   longBreakDurationMinutes: 'Duracao da pausa longa',
@@ -30,5 +39,6 @@ export function settingsToDraft(settings: PomodoroSettings): PomodoroSettingsDra
     shortBreakDurationMinutes: String(settings.shortBreakDurationMinutes),
     longBreakDurationMinutes: String(settings.longBreakDurationMinutes),
     cyclesBeforeLongBreak: String(settings.cyclesBeforeLongBreak),
+    keepSessionRunningOnHiddenTab: settings.keepSessionRunningOnHiddenTab,
   };
 }

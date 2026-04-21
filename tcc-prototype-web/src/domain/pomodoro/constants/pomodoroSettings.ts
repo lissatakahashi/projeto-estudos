@@ -6,6 +6,7 @@ export const DEFAULT_POMODORO_SETTINGS: PomodoroSettings = {
   shortBreakDurationMinutes: 5,
   longBreakDurationMinutes: 15,
   cyclesBeforeLongBreak: 4,
+  keepSessionRunningOnHiddenTab: false,
 };
 
 export const POMODORO_SETTINGS_LIMITS = {

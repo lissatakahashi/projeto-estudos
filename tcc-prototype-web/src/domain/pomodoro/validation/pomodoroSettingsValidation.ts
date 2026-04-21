@@ -1,14 +1,14 @@
 import { DEFAULT_POMODORO_SETTINGS, POMODORO_SETTINGS_LIMITS } from '../constants/pomodoroSettings';
 import {
     POMODORO_SETTINGS_FIELD_LABELS,
+    type PomodoroNumericSettingsField,
     type PomodoroSettings,
     type PomodoroSettingsDraft,
     type PomodoroSettingsErrors,
-    type PomodoroSettingsField,
     type PomodoroSettingsValidationResult,
 } from '../types/PomodoroSettings';
 
-const SETTINGS_FIELDS: PomodoroSettingsField[] = [
+const SETTINGS_FIELDS: PomodoroNumericSettingsField[] = [
   'focusDurationMinutes',
   'shortBreakDurationMinutes',
   'longBreakDurationMinutes',
@@ -42,7 +42,7 @@ export function normalizeSettingsDraftValue(rawValue: string): string {
 
 export function validatePomodoroSettingsDraft(draft: PomodoroSettingsDraft): PomodoroSettingsValidationResult {
   const errors: PomodoroSettingsErrors = {};
-  const parsedValues = {} as Record<PomodoroSettingsField, number>;
+  const parsedValues = {} as Record<PomodoroNumericSettingsField, number>;
 
   SETTINGS_FIELDS.forEach((field) => {
     const parsed = parsePositiveInteger(draft[field]);
@@ -82,6 +82,7 @@ export function validatePomodoroSettingsDraft(draft: PomodoroSettingsDraft): Pom
       shortBreakDurationMinutes: parsedValues.shortBreakDurationMinutes,
       longBreakDurationMinutes: parsedValues.longBreakDurationMinutes,
       cyclesBeforeLongBreak: parsedValues.cyclesBeforeLongBreak,
+      keepSessionRunningOnHiddenTab: draft.keepSessionRunningOnHiddenTab,
     },
     errors: {},
   };
@@ -94,6 +95,8 @@ export function sanitizePomodoroSettings(input?: Partial<PomodoroSettings> | nul
     shortBreakDurationMinutes: source.shortBreakDurationMinutes ?? DEFAULT_POMODORO_SETTINGS.shortBreakDurationMinutes,
     longBreakDurationMinutes: source.longBreakDurationMinutes ?? DEFAULT_POMODORO_SETTINGS.longBreakDurationMinutes,
     cyclesBeforeLongBreak: source.cyclesBeforeLongBreak ?? DEFAULT_POMODORO_SETTINGS.cyclesBeforeLongBreak,
+    keepSessionRunningOnHiddenTab:
+      source.keepSessionRunningOnHiddenTab ?? DEFAULT_POMODORO_SETTINGS.keepSessionRunningOnHiddenTab,
   };
 
   const normalized: PomodoroSettings = {
@@ -117,6 +120,7 @@ export function sanitizePomodoroSettings(input?: Partial<PomodoroSettings> | nul
       POMODORO_SETTINGS_LIMITS.cyclesBeforeLongBreak.min,
       POMODORO_SETTINGS_LIMITS.cyclesBeforeLongBreak.max,
     ),
+    keepSessionRunningOnHiddenTab: Boolean(merged.keepSessionRunningOnHiddenTab),
   };
 
   if (normalized.longBreakDurationMinutes < normalized.shortBreakDurationMinutes) {

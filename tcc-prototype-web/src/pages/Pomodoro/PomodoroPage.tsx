@@ -9,8 +9,10 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
+    FormControlLabel,
     Paper,
     Stack,
+    Switch,
     TextField,
     Typography,
 } from '@mui/material';
@@ -27,6 +29,9 @@ import type {
     PomodoroSettingsErrors,
 } from '../../domain/pomodoro/types/PomodoroSettings';
 import { settingsToDraft } from '../../domain/pomodoro/types/PomodoroSettings';
+import {
+    isPomodoroProgressAtRisk,
+} from '../../domain/pomodoro/usecases/pomodoroExitProtection';
 import {
     canEditPomodoroSettings,
     isPomodoroConfigLocked,
@@ -102,40 +107,29 @@ const PomodoroPage: React.FC = () => {
         if (hiddenAtRef.current) {
           const diffMs = Date.now() - hiddenAtRef.current;
           const diffSec = Math.round(diffMs / 1000);
-          if (diffSec > 0) penalize(diffSec);
+          const shouldPenalizeOnHiddenTab = !usePomodoroStore.getState().settings.keepSessionRunningOnHiddenTab;
+          if (diffSec > 0 && shouldPenalizeOnHiddenTab) penalize(diffSec);
         }
         hiddenAtRef.current = null;
       }
     };
 
-    const onBeforeUnload = () => {
+    const onBeforeUnload = (event: BeforeUnloadEvent) => {
       const state = usePomodoroStore.getState();
-      const active = state.pomodoro;
-      if (!active || active.status === 'finished' || active.mode !== 'focus') {
+      if (!isPomodoroProgressAtRisk(state.pomodoro)) {
         return;
       }
 
-      void state.invalidateActivePomodoro('page_unload');
-    };
-
-    const onPageHide = () => {
-      onBeforeUnload();
+      event.preventDefault();
+      event.returnValue = '';
     };
 
     document.addEventListener('visibilitychange', onVisibility);
     window.addEventListener('beforeunload', onBeforeUnload);
-    window.addEventListener('pagehide', onPageHide);
 
     return () => {
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('beforeunload', onBeforeUnload);
-      window.removeEventListener('pagehide', onPageHide);
-      const state = usePomodoroStore.getState();
-      const active = state.pomodoro;
-      if (!active || active.status === 'finished' || active.mode !== 'focus') {
-        return;
-      }
-      void state.invalidateActivePomodoro('component_unmount');
     };
   }, [clearExpiredSession, load, loadSettings, penalize]);
 
@@ -215,12 +209,16 @@ const PomodoroPage: React.FC = () => {
     setDraft(settingsToDraft(settings));
   };
 
-  const handleDraftChange = (field: keyof PomodoroSettingsDraft) => (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDraftChange = (field: Exclude<keyof PomodoroSettingsDraft, 'keepSessionRunningOnHiddenTab'>) => (event: React.ChangeEvent<HTMLInputElement>) => {
     const normalizedValue = normalizeSettingsDraftValue(event.target.value);
     setDraft((prev) => ({ ...prev, [field]: normalizedValue }));
     if (fieldErrors[field]) {
       setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
     }
+  };
+
+  const handleKeepSessionOnHiddenTabChange = (_event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
+    setDraft((prev) => ({ ...prev, keepSessionRunningOnHiddenTab: checked }));
   };
 
   const handleSaveSettings = async () => {
@@ -414,7 +412,9 @@ const PomodoroPage: React.FC = () => {
           </Typography>
 
           <Typography variant="caption" color="text.secondary">
-            Se a sessão de foco for abandonada (cancelamento, troca de rota, recarregamento, fechamento ou aba oculta por tempo excessivo), ela é invalidada e não conta progresso.
+            {settings.keepSessionRunningOnHiddenTab
+              ? 'Trocas de guia do navegador nao invalidam a sessao enquanto esta opcao estiver ativa. Sair da pagina ainda exige confirmacao para evitar perda acidental.'
+              : 'Se a sessao de foco for abandonada (cancelamento, troca de rota, recarregamento, fechamento ou aba oculta por tempo excessivo), ela e invalidada e nao conta progresso.'}
           </Typography>
 
           <Typography variant="caption" color="text.secondary">
@@ -500,6 +500,21 @@ const PomodoroPage: React.FC = () => {
               aria-invalid={Boolean(fieldErrors.cyclesBeforeLongBreak)}
               fullWidth
             />
+
+            <FormControlLabel
+              control={(
+                <Switch
+                  checked={draft.keepSessionRunningOnHiddenTab}
+                  onChange={handleKeepSessionOnHiddenTabChange}
+                  color="primary"
+                />
+              )}
+              label="Continuar sessão ao acessar outra guia do navegador"
+            />
+
+            <Typography variant="caption" color="text.secondary">
+              Quando ativado, alternar para outra guia nao invalida a sessao de foco por perda de visibilidade.
+            </Typography>
 
             {pomodoro && pomodoro.status !== 'finished' && (
               <Alert severity="info">

@@ -18,10 +18,11 @@ import { useWalletStore } from '../../state/useWalletStore';
 import ThemeToggle from './ThemeToggle';
 
 const navLinks = [
-  { to: '/dashboard', label: 'Dashboard' },
+  { to: '/dashboard', label: 'Painel' },
   { to: '/pomodoro', label: 'Pomodoro' },
-  { to: '/pet', label: 'Pet' },
+  { to: '/pet', label: 'Personagem' },
   { to: '/shop', label: 'Loja' },
+  { to: '/admin/shop-items', label: 'Admin loja' },
   { to: '/inventory', label: 'Inventário' },
   { to: '/environment', label: 'Ambiente' },
   { to: '/about', label: 'Sobre' },

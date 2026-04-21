@@ -1,14 +1,7 @@
-import { beforeEach, fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PomodoroSettings } from '../../domain/pomodoro/types/PomodoroSettings';
-
-const defaultSettings: PomodoroSettings = {
-  focusDurationMinutes: 25,
-  shortBreakDurationMinutes: 5,
-  longBreakDurationMinutes: 15,
-  cyclesBeforeLongBreak: 4,
-};
 
 type MockPomodoroStoreState = {
   pomodoro: {
@@ -68,6 +61,14 @@ const {
   useAuthSessionMock,
   useDashboardProgressMock,
 } = vi.hoisted(() => {
+  const defaultSettings: PomodoroSettings = {
+    focusDurationMinutes: 25,
+    shortBreakDurationMinutes: 5,
+    longBreakDurationMinutes: 15,
+    cyclesBeforeLongBreak: 4,
+    keepSessionRunningOnHiddenTab: false,
+  };
+
   const createPomodoroState = (): MockPomodoroStoreState => ({
     pomodoro: null,
     cycleState: {
@@ -127,7 +128,7 @@ const {
     resetMockPomodoroStoreState,
     useWalletStoreMock: vi.fn((selector: (state: MockWalletStoreState) => unknown) => selector(baseWalletStoreState)),
     useAuthSessionMock: vi.fn(() => null),
-    useDashboardProgressMock: vi.fn(() => ({ data: null, loading: false, error: null, refresh: vi.fn() })),
+    useDashboardProgressMock: vi.fn((_userId: string | null) => ({ data: null, loading: false, error: null, refresh: vi.fn() })),
   };
 });
 
@@ -146,6 +147,14 @@ vi.mock('../../lib/supabase/hooks', () => ({
 vi.mock('../../hooks/useDashboardProgress', () => ({
   useDashboardProgress: (userId: string | null) => useDashboardProgressMock(userId),
 }));
+
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
+  return {
+    ...actual,
+    unstable_usePrompt: vi.fn(),
+  };
+});
 
 import PomodoroPage from './PomodoroPage';
 
@@ -268,5 +277,57 @@ describe('PomodoroPage - orientacoes da configuracao', () => {
 
     fireEvent.click(settingsButton);
     expect(screen.getByText(/Configuracao da sessao Pomodoro|Configuração da sessão Pomodoro/i)).toBeTruthy();
+  });
+
+  it('ativa confirmacao de saida do navegador quando ha sessao em andamento', () => {
+    setMockPomodoroStoreState({
+      pomodoro: {
+        pomodoroId: 'running-2',
+        title: 'Foco',
+        mode: 'focus',
+        status: 'running',
+        duration: 1500,
+        remaining: 1000,
+        isValid: true,
+        lostFocusSeconds: 0,
+        startedAt: '2026-04-16T10:00:00.000Z',
+      },
+      cycleState: {
+        phase: 'focus',
+        activeMode: 'focus',
+        nextMode: 'short_break',
+        remainingSeconds: 1000,
+        focusSessionsCompletedInCycle: 0,
+      },
+    });
+
+    render(
+      <BrowserRouter>
+        <PomodoroPage />
+      </BrowserRouter>,
+    );
+
+    const beforeUnloadEvent = new Event('beforeunload', { cancelable: true }) as BeforeUnloadEvent;
+    Object.defineProperty(beforeUnloadEvent, 'returnValue', {
+      writable: true,
+      value: undefined,
+    });
+
+    window.dispatchEvent(beforeUnloadEvent);
+
+    expect(beforeUnloadEvent.defaultPrevented).toBe(true);
+  });
+
+  it('nao ativa confirmacao de saida quando nao ha sessao ativa', () => {
+    render(
+      <BrowserRouter>
+        <PomodoroPage />
+      </BrowserRouter>,
+    );
+
+    const beforeUnloadEvent = new Event('beforeunload', { cancelable: true }) as BeforeUnloadEvent;
+    window.dispatchEvent(beforeUnloadEvent);
+
+    expect(beforeUnloadEvent.defaultPrevented).toBe(false);
   });
 });

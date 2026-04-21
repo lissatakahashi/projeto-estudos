@@ -18,6 +18,7 @@ import {
     type EnvironmentSlotName,
 } from '../../domain/environment/types/environment';
 import { getCompatibleInventoryItemsBySlot } from '../../domain/environment/usecases/getCompatibleInventoryItemsBySlot';
+import { getShopRarityPresentation } from '../../lib/shopRarity';
 import { useEnvironmentStore } from '../../state/useEnvironmentStore';
 import { useShopStore } from '../../state/useShopStore';
 
@@ -89,7 +90,7 @@ const EnvironmentPage: React.FC = () => {
             Ambiente Virtual
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Personalize seu ambiente de estudo aplicando itens do inventário em slots fixos e persistentes.
+            Personalize seu ambiente de estudo aplicando itens do inventário em posições fixas e persistentes.
           </Typography>
         </Box>
 
@@ -145,7 +146,7 @@ const EnvironmentPage: React.FC = () => {
                   Cenário de estudo
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-                  Clique em um slot para escolher o item compatível.
+                  Clique em uma posição para escolher o item compatível.
                 </Typography>
 
                 <Box
@@ -180,7 +181,7 @@ const EnvironmentPage: React.FC = () => {
                         variant={isSelected ? 'contained' : 'outlined'}
                         color={isSelected ? 'primary' : 'inherit'}
                         onClick={() => setSelectedSlot(slotDefinition.slotName)}
-                        aria-label={`Selecionar slot ${slotDefinition.label}`}
+                        aria-label={`Selecionar posição ${slotDefinition.label}`}
                         sx={{
                           position: 'absolute',
                           top: layout.top,
@@ -210,7 +211,7 @@ const EnvironmentPage: React.FC = () => {
                           {slotDefinition.label}
                         </Typography>
                         <Typography variant="caption" sx={{ opacity: 0.9, textAlign: 'center' }}>
-                          {equippedInventoryItem ? equippedInventoryItem.item.name : 'Slot vazio'}
+                          {equippedInventoryItem ? equippedInventoryItem.item.name : 'Posição vazia'}
                         </Typography>
                       </Button>
                     );
@@ -222,12 +223,12 @@ const EnvironmentPage: React.FC = () => {
             <Card variant="outlined" sx={{ width: { xs: '100%', lg: 420 }, borderRadius: 3 }}>
               <CardContent>
                 <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                  Personalização por slot
+                  Personalização por posição
                 </Typography>
 
                 {!selectedSlotDefinition && (
                   <Alert severity="info" sx={{ mt: 2 }}>
-                    Selecione um slot no cenário para listar os itens compatíveis do inventário.
+                    Selecione uma posição no cenário para listar os itens compatíveis do inventário.
                   </Alert>
                 )}
 
@@ -261,13 +262,13 @@ const EnvironmentPage: React.FC = () => {
                           void clearSlot(selectedSlotDefinition.slotName);
                         }}
                       >
-                        Remover item equipado deste slot
+                        Remover item equipado desta posição
                       </Button>
                     )}
 
                     {compatibleItems.length === 0 && (
                       <Alert severity="info">
-                        Voce nao possui itens compativeis para este slot.
+                        Você não possui itens compatíveis para esta posição.
                         {' '}
                         <Button component={RouterLink} to="/shop" size="small">
                           Ir para loja
@@ -277,6 +278,7 @@ const EnvironmentPage: React.FC = () => {
 
                     {compatibleItems.map((entry) => {
                       const currentlyEquipped = configuration.bySlot[selectedSlotDefinition.slotName]?.inventoryEntryId === entry.inventoryEntryId;
+                      const rarityPresentation = getShopRarityPresentation(entry.item.rarity);
 
                       return (
                         <Card key={entry.inventoryEntryId} variant="outlined" sx={{ borderRadius: 2 }}>
@@ -287,12 +289,17 @@ const EnvironmentPage: React.FC = () => {
                               </Typography>
                               <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
                                 <Chip size="small" label={entry.item.category} />
-                                <Chip size="small" label={entry.item.rarity} />
+                                <Chip
+                                  size="small"
+                                  color={rarityPresentation.color}
+                                  label={rarityPresentation.label}
+                                  sx={rarityPresentation.sx}
+                                />
                                 {entry.item.environmentSlot && (
                                   <Chip
                                     size="small"
                                     variant="outlined"
-                                    label={`Slot recomendado: ${entry.item.environmentSlot}`}
+                                    label={`Posição recomendada: ${entry.item.environmentSlot}`}
                                   />
                                 )}
                               </Stack>
@@ -308,7 +315,7 @@ const EnvironmentPage: React.FC = () => {
                                   void equipSlotWithInventoryItem(selectedSlotDefinition.slotName, entry.inventoryEntryId);
                                 }}
                               >
-                                {currentlyEquipped ? 'Ja equipado neste slot' : 'Equipar neste slot'}
+                                {currentlyEquipped ? 'Já equipado nesta posição' : 'Equipar nesta posição'}
                               </Button>
                             </Stack>
                           </CardContent>
@@ -318,7 +325,7 @@ const EnvironmentPage: React.FC = () => {
 
                     {inventoryStatus === 'empty' && (
                       <Alert severity="info">
-                        Seu inventario esta vazio. Compre itens para iniciar a personalizacao do ambiente.
+                        Seu inventário está vazio. Compre itens para iniciar a personalização do ambiente.
                       </Alert>
                     )}
                   </Stack>

@@ -1,4 +1,4 @@
-import type { PomodoroSettingsField } from '../types/PomodoroSettings';
+import type { PomodoroNumericSettingsField } from '../types/PomodoroSettings';
 import { POMODORO_SETTINGS_LIMITS } from './pomodoroSettings';
 
 export type PomodoroFieldGuidance = {
@@ -13,7 +13,7 @@ export const POMODORO_SETTINGS_GENERAL_GUIDANCE = {
     'Essas definições controlam o tempo de foco, os intervalos curtos e a pausa longa do seu ciclo Pomodoro.',
 } as const;
 
-export const POMODORO_SETTINGS_FIELD_GUIDANCE: Record<PomodoroSettingsField, PomodoroFieldGuidance> = {
+export const POMODORO_SETTINGS_FIELD_GUIDANCE: Record<PomodoroNumericSettingsField, PomodoroFieldGuidance> = {
   focusDurationMinutes: {
     label: 'Duração do foco (minutos)',
     description: 'Tempo em que você permanece concentrado na atividade antes de fazer uma pausa.',
@@ -36,7 +36,7 @@ export const POMODORO_SETTINGS_FIELD_GUIDANCE: Record<PomodoroSettingsField, Pom
   },
 };
 
-export function getPomodoroFieldHelperText(field: PomodoroSettingsField): string {
+export function getPomodoroFieldHelperText(field: PomodoroNumericSettingsField): string {
   const guidance = POMODORO_SETTINGS_FIELD_GUIDANCE[field];
   return `${guidance.description} ${guidance.recommendation}`;
 }

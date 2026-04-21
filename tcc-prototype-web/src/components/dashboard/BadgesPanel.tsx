@@ -18,7 +18,7 @@ const categoryLabelByKey: Record<Badge['category'], string> = {
   study: 'Estudo',
   economy: 'Economia',
   customization: 'Personalização',
-  pet: 'Pet',
+  pet: 'Personagem',
 };
 
 const BadgesPanel: React.FC<BadgesPanelProps> = ({ badges, userBadges, loading = false }) => {
@@ -34,8 +34,8 @@ const BadgesPanel: React.FC<BadgesPanelProps> = ({ badges, userBadges, loading =
             </Typography>
             <Typography variant="body2" color="text.secondary">
               {loading
-                ? 'Carregando badges...'
-                : `${earnedCount} de ${badges.length} badge(s) desbloqueada(s)`}
+                ? 'Carregando insígnias...'
+                : `${earnedCount} de ${badges.length} insígnia(s) desbloqueada(s)`}
             </Typography>
           </Box>
 

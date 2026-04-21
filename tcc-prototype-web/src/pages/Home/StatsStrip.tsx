@@ -1,14 +1,14 @@
-import React from 'react';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
-import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import React from 'react';
 
 const stats = [
   { value: '12.4k', label: 'Sessões concluídas' },
   { value: '1,234h', label: 'Tempo focado' },
-  { value: '45', label: 'Maior streak' },
+  { value: '45', label: 'Maior sequência' },
 ];
 
 const StatsStrip: React.FC = () => (
