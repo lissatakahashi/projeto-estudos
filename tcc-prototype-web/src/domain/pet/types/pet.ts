@@ -24,6 +24,19 @@ export const FEED_PET_COST_POLICY: FeedPetCostPolicy = {
   cooldownSeconds: 60,
 };
 
+export function canFeedPetWithCurrentBalance(
+  currentBalance: number,
+  policy: FeedPetCostPolicy = FEED_PET_COST_POLICY,
+): boolean {
+  return Number.isFinite(currentBalance) && currentBalance >= policy.coins;
+}
+
+export function getPetFeedInsufficientFundsMessage(
+  policy: FeedPetCostPolicy = FEED_PET_COST_POLICY,
+): string {
+  return `Você está sem moedas suficientes para alimentar seu pet. São necessárias ${policy.coins} moedas. Conclua sessões de estudo para ganhar moedas e tente novamente.`;
+}
+
 export type FeedPetReason =
   | 'fed'
   | 'unauthorized'

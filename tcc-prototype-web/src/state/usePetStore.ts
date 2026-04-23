@@ -1,6 +1,12 @@
 import create from 'zustand';
 import { resolveFeedbackMessage } from '../domain/feedback/catalog';
-import { FEED_PET_COST_POLICY, derivePetMoodState, type FeedPetResult, type UserPetState } from '../domain/pet/types/pet';
+import {
+    canFeedPetWithCurrentBalance,
+    derivePetMoodState,
+    getPetFeedInsufficientFundsMessage,
+    type FeedPetResult,
+    type UserPetState
+} from '../domain/pet/types/pet';
 import { feedPet } from '../domain/pet/usecases/feedPet';
 import { fetchUserPetState } from '../domain/pet/usecases/fetchUserPetState';
 import { supabase } from '../lib/supabase/client';
@@ -85,10 +91,28 @@ export const usePetStore = create<PetState>((set, get) => ({
   },
 
   feedPet: async () => {
-    const { userId, feeding } = get();
+    const { userId, feeding, pet } = get();
 
     if (feeding) {
       return defaultFeedResult;
+    }
+
+    const currentBalance = useWalletStore.getState().balance;
+    if (!canFeedPetWithCurrentBalance(currentBalance)) {
+      set({
+        error: null,
+        feedback: {
+          severity: 'error',
+          message: getPetFeedInsufficientFundsMessage(),
+        },
+      });
+
+      return {
+        ...defaultFeedResult,
+        reason: 'insufficient_balance',
+        newBalance: currentBalance,
+        pet,
+      };
     }
 
     set({ feeding: true, feedback: null, error: null });
@@ -133,7 +157,7 @@ export const usePetStore = create<PetState>((set, get) => ({
       set({
         feedback: {
           severity: 'error',
-          message: `Saldo insuficiente. Alimentar custa ${FEED_PET_COST_POLICY.coins} moedas.`,
+          message: getPetFeedInsufficientFundsMessage(),
         },
       });
       return result;

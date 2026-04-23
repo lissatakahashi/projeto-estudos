@@ -10,8 +10,15 @@ import {
     Typography,
 } from '@mui/material';
 import React from 'react';
-import { FEED_PET_COST_POLICY, derivePetMoodState, getPetVisualByMood } from '../../domain/pet/types/pet';
+import {
+    canFeedPetWithCurrentBalance,
+    derivePetMoodState,
+    FEED_PET_COST_POLICY,
+    getPetFeedInsufficientFundsMessage,
+    getPetVisualByMood,
+} from '../../domain/pet/types/pet';
 import { usePetStore } from '../../state/usePetStore';
+import { useWalletStore } from '../../state/useWalletStore';
 
 type PetStatusCardProps = {
   compact?: boolean;
@@ -26,9 +33,13 @@ const PetStatusCard: React.FC<PetStatusCardProps> = ({ compact = false }) => {
   const feedPet = usePetStore((s) => s.feedPet);
   const loadPetState = usePetStore((s) => s.loadPetState);
   const clearFeedback = usePetStore((s) => s.clearFeedback);
+  const walletBalance = useWalletStore((s) => s.balance);
 
   const mood = pet ? derivePetMoodState(pet) : 'neutral';
   const visual = getPetVisualByMood(mood);
+  const hasSufficientBalanceToFeed = canFeedPetWithCurrentBalance(walletBalance);
+  const insufficientFundsMessage = getPetFeedInsufficientFundsMessage();
+  const feedButtonHelperId = 'pet-feed-helper-text';
 
   return (
     <Card variant="outlined" sx={{ borderRadius: 3, minHeight: compact ? 'unset' : 320 }}>
@@ -36,7 +47,7 @@ const PetStatusCard: React.FC<PetStatusCardProps> = ({ compact = false }) => {
         <Stack spacing={2}>
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              Personagem Virtual
+              Pet Virtual
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
               Alimente o pet para manter o estado de cuidado ativo no seu progresso de estudo.
@@ -111,7 +122,9 @@ const PetStatusCard: React.FC<PetStatusCardProps> = ({ compact = false }) => {
 
               <Box>
                 <Button
-                  variant="contained"
+                  variant={hasSufficientBalanceToFeed ? 'contained' : 'outlined'}
+                  color={hasSufficientBalanceToFeed ? 'primary' : 'warning'}
+                  aria-describedby={!hasSufficientBalanceToFeed ? feedButtonHelperId : undefined}
                   disabled={feeding || loading}
                   onClick={() => {
                     void feedPet();
@@ -119,6 +132,16 @@ const PetStatusCard: React.FC<PetStatusCardProps> = ({ compact = false }) => {
                 >
                   {feeding ? 'Alimentando...' : `Alimentar pet (${FEED_PET_COST_POLICY.coins} moedas)`}
                 </Button>
+                {!hasSufficientBalanceToFeed && (
+                  <Typography
+                    id={feedButtonHelperId}
+                    variant="caption"
+                    color="warning.main"
+                    sx={{ display: 'block', mt: 1 }}
+                  >
+                    {insufficientFundsMessage}
+                  </Typography>
+                )}
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
                   Política: custo de {FEED_PET_COST_POLICY.coins} moedas por alimentação e cooldown de {FEED_PET_COST_POLICY.cooldownSeconds}s.
                 </Typography>
