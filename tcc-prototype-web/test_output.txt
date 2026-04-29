@@ -1,0 +1,443 @@
+﻿
+[7m[1m[36m RUN [39m[22m[27m [36mv0.34.6[39m [90mC:/Users/lilit/OneDrive/Documentos/faculdade/tcc2/Projeto-Estudos/tcc-prototype-web[39m
+
+ [32mÔ£ô[39m src/pages/Dashboard/DashboardPage.test.tsx[2m > [22mDashboardPage[2m > [22mshows empty state guidance when user has no data yet
+ [31m├ù[39m src/pages/Dashboard/DashboardPage.test.tsx[2m > [22mDashboardPage[2m > [22mshows login CTA when user is not authenticated
+[31m   ÔåÆ Unable to find an accessible element with the role "button" and name `/Entrar na conta/i`
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "Painel de progresso":
+  [36m<h1[31m
+    [33mclass[31m=[32m"MuiTypography-root MuiTypography-h4 css-1313egv-MuiTypography-root"[31m
+  [36m/>[31m
+
+  Name "0":
+  [36m<h5[31m
+    [33mclass[31m=[32m"MuiTypography-root MuiTypography-h5 css-bezmlo-MuiTypography-root"[31m
+  [36m/>[31m
+
+  Name "0 min":
+  [36m<h5[31m
+    [33mclass[31m=[32m"MuiTypography-root MuiTypography-h5 css-bezmlo-MuiTypography-root"[31m
+  [36m/>[31m
+
+  Name "0 moedas":
+  [36m<h5[31m
+    [33mclass[31m=[32m"MuiTypography-root MuiTypography-h5 css-lr7mnz-MuiTypography-root"[31m
+  [36m/>[31m
+
+  Name "0":
+  [36m<h5[31m
+    [33mclass[31m=[32m"MuiTypography-root MuiTypography-h5 css-bezmlo-MuiTypography-root"[31m
+  [36m/>[31m
+
+  Name "0":
+  [36m<h5[31m
+    [33mclass[31m=[32m"MuiTypography-root MuiTypography-h5 css-bezmlo-MuiTypography-root"[31m
+  [36m/>[31m
+
+  Name "Resumo de progresso recente":
+  [36m<h6[31m
+    [33mclass[31m=[32m"MuiTypography-root MuiTypography-h6 css-tjvwag-MuiTypography-root"[31m
+  [36m/>[31m
+
+  Name "Insights de estudo":
+  [36m<h6[31m
+    [33mclass[31m=[32m"MuiTypography-root MuiTypography-h6 css-tjvwag-MuiTypography-root"[31m
+  [36m/>[31m
+
+  Name "0.0%":
+  [36m<h6[31m
+    [33mclass[31m=[32m"MuiTypography-root MuiTypography-h6 css-tjvwag-MuiTypography-root"[31m
+  [36m/>[31m
+
+  Name "0":
+  [36m<h6[31m
+    [33mclass[31m=[32m"MuiTypography-root MuiTypography-h6 css-tjvwag-MuiTypography-root"[31m
+  [36m/>[31m
+
+  Name "0":
+  [36m<h6[31m
+    [33mclass[31m=[32m"MuiTypography-root MuiTypography-h6 css-tjvwag-MuiTypography-root"[31m
+  [36m/>[31m
+
+  Name "Ainda sem dados":
+  [36m<h6[31m
+    [33mclass[31m=[32m"MuiTypography-root MuiTypography-h6 css-tjvwag-MuiTypography-root"[31m
+  [36m/>[31m
+
+  Name "Conquistas":
+  [36m<h6[31m
+    [33mclass[31m=[32m"MuiTypography-root MuiTypography-h6 css-tjvwag-MuiTypography-root"[31m
+  [36m/>[31m
+
+  Name "├Ültimas 5 sess├Áes":
+  [36m<h6[31m
+    [33mclass[31m=[32m"MuiTypography-root MuiTypography-h6 css-e5r73c-MuiTypography-root"[31m
+  [36m/>[31m
+
+  Name "Atividade recente":
+  [36m<h6[31m
+    [33mclass[31m=[32m"MuiTypography-root MuiTypography-h6 css-e5r73c-MuiTypography-root"[31m
+  [36m/>[31m
+
+  --------------------------------------------------
+  alert:
+
+  Name "":
+  [36m<div[31m
+    [33mclass[31m=[32m"MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-colorInfo MuiAlert-standardInfo MuiAlert-standard css-hu7tqv-MuiPaper-root-MuiAlert-root"[31m
+    [33mrole[31m=[32m"alert"[31m
+  [36m/>[31m
+
+  Name "":
+  [36m<div[31m
+    [33mclass[31m=[32m"MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-colorInfo MuiAlert-standardInfo MuiAlert-standard css-hu7tqv-MuiPaper-root-MuiAlert-root"[31m
+    [33mrole[31m=[32m"alert"[31m
+  [36m/>[31m
+
+  --------------------------------------------------
+  link:
+
+  Name "Iniciar primeira sess├úo":
+  [36m<a[31m
+    [33mclass[31m=[32m"MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit css-u44ztt-MuiButtonBase-root-MuiButton-root"[31m
+    [33mhref[31m=[32m"/pomodoro"[31m
+    [33mtabindex[31m=[32m"0"[31m
+  [36m/>[31m
+
+  --------------------------------------------------heading:
+
+  Name "Painel de progresso":
+  [36m<h1[31m
+    [33mclass[31m=[32m"MuiTypography-root MuiTypography-h4 css-1313egv-MuiTypography-root"[31m
+  [36m/>[31m
+
+  --------------------------------------------------
+  link:
+
+  Name "Entrar na conta":
+  [36m<a[31m
+    [33mclass[31m=[32m"MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary css-sghohy-MuiButtonBase-root-MuiButton-root"[31m
+    [33mhref[31m=[32m"/login"[31m
+    [33mtabindex[31m=[32m"0"[31m
+  [36m/>[31m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"MuiContainer-root MuiContainer-maxWidthLg css-12siseb-MuiContainer-root"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"MuiStack-root css-v2woy3-MuiStack-root"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"MuiBox-root css-0"[31m
+        [36m>[31m
+          [36m<h1[31m
+            [33mclass[31m=[32m"MuiTypography-root MuiTypography-h4 css-1313egv-MuiTypography-root"[31m
+          [36m>[31m
+            [0mPainel de progresso[0m
+          [36m</h1>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"MuiTypography-root MuiTypography-body2 css-1i1l7u0-MuiTypography-root"[31m
+          [36m>[31m
+            [0mAcompanhe sua evolu├º├úo em foco, economia gamificada e engajamento recente.[0m
+          [36m</p>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-colorInfo MuiAlert-standardInfo MuiAlert-standard css-hu7tqv-MuiPaper-root-MuiAlert-root"[31m
+          [33mrole[31m=[32m"alert"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"MuiAlert-icon css-1ytlwq5-MuiAlert-icon"[31m
+          [36m>[31m
+            [36m<svg[31m
+              [33maria-hidden[31m=[32m"true"[31m
+              [33mclass[31m=[32m"MuiSvgIcon-root MuiSvgIcon-fontSizeInherit css-1vooibu-MuiSvgIcon-root"[31m
+              [33mdata-testid[31m=[32m"InfoOutlinedIcon"[31m
+              [33mfocusable[31m=[32m"false"[31m
+              [33mviewBox[31m=[32m"0 0 24 24"[31m
+            [36m>[31m
+              [36m<path[31m
+                [33md[31m=[32m"M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20, 12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10, 10 0 0,0 12,2M11,17H13V11H11V17Z"[31m
+              [36m/>[31m
+            [36m</svg>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"MuiAlert-message css-1pxa9xg-MuiAlert-message"[31m
+          [36m>[31m
+            [0mComplete sua primeira sess├úo para come├ºar a acompanhar seu progresso.[0m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"MuiAlert-action css-ki1hdl-MuiAlert-action"[31m
+          [36m>[31m
+            [36m<a[31m
+              [33mclass[31m=[32m"MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit css-u44ztt-MuiButtonBase-root-MuiButton-root"[31m
+              [33mhref[31m=[32m"/pomodoro"[31m
+              [33mtabindex[31m=[32m"0"[31m
+            [36m>[31m
+              [0mIniciar primeira sess├úo[0m
+              [36m<span[31m
+                [33mclass[31m=[32m"MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"[31m
+              [36m/>[31m
+            [36m</a>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"MuiBox-root css-3pc22s"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"MuiPaper-root MuiPaper-outlined MuiPaper-rounded MuiCard-root css-1ctcqla-MuiPaper-root-MuiCard-root"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"MuiCardContent-root css-46bh2p-MuiCardContent-root"[31m
+            [36m>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"MuiTypography-root MuiTypography-caption css-ol7wxs-MuiTypography-root"[31m
+              [36m>[31m
+                [0mSess├Áes conclu├¡das[0m
+              [36m</span>[31m
+              [36m<h5[31m
+                [33mclass[31m=[32m"MuiTypography-root MuiTypography-h5 css-bezmlo-MuiTypography-root"[31m
+              [36m>[31m
+                [0m0[0m
+              [36m</h5>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"MuiPaper-root MuiPaper-outlined MuiPaper-rounded MuiCard-root css-1ctcqla-MuiPaper-root-MuiCard-root"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"MuiCardContent-root css-46bh2p-MuiCardContent-root"[31m
+            [36m>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"MuiTypography-root MuiTypography-caption css-ol7wxs-MuiTypography-root"[31m
+              [36m>[31m
+                [0mTempo total estudado[0m
+              [36m</span>[31m
+              [36m<h5[31m
+                [33mclass[31m=[32m"MuiTypography-root MuiTypography-h5 css-bezmlo-MuiTypography-root"[31m
+              [36m>[31m
+                [0m0 min[0m
+              [36m</h5>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"MuiPaper-root MuiPaper-outlined MuiPaper-rounded MuiCard-root css-1ctcqla-MuiPaper-root-MuiCard-root"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"MuiCardContent-root css-46bh2p-MuiCardContent-root"[31m
+            [36m>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"MuiTypography-root MuiTypography-caption css-ol7wxs-MuiTypography-root"[31m
+              [36m>[31m
+                [0mSaldo atual[0m
+              [36m</span>[31m
+              [36m<h5[31m
+                [33mclass[31m=[32m"MuiTypography-root MuiTypography-h5 css-lr7mnz-MuiTypography-root"[31m
+              [36m>[31m
+                [0m0[0m
+                [0m moedas[0m
+              [36m</h5>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"MuiPaper-root MuiPaper-outlined MuiPaper-rounded MuiCard-root css-1ctcqla-MuiPaper-root-MuiCard-root"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"MuiCardContent-root css-46bh2p-MuiCardContent-root"[31m
+            [36m>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"MuiTypography-root MuiTypography-caption css-ol7wxs-MuiTypography-root"[31m
+              [36m>[31m
+                [0mMoedas ganhas[0m
+              [36m</span>[31m
+              [36m<h5[31m
+                [33mclass[31m=[32m"MuiTypography-root MuiTypography-h5 css-bezmlo-MuiTypography-root"[31m
+              [36m>[31m
+                [0m0[0m
+              [36m</h5>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"MuiPaper-root MuiPaper-outlined MuiPaper-rounded MuiCard-root css-1ctcqla-MuiPaper-root-MuiCard-root"[31m
+          [36m>[31m
+            [36m<div[31m
+       ...[39m
+ [31m├ù[39m src/pages/Dashboard/DashboardPage.test.tsx[2m > [22mDashboardPage[2m > [22mrenders recommendation insights when user already has history
+[31m   ÔåÆ Found multiple elements with the role "heading" and name `/Insights de estudo/i`
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<h6[31m
+  [33mclass[31m=[32m"MuiTypography-root MuiTypography-h6 css-tjvwag-MuiTypography-root"[31m
+[36m>[31m
+  [0mInsights de estudo[0m
+[36m</h6>[31m
+
+Ignored nodes: comments, script, style
+[36m<h6[31m
+  [33mclass[31m=[32m"MuiTypography-root MuiTypography-h6 css-tjvwag-MuiTypography-root"[31m
+[36m>[31m
+  [0mInsights de estudo[0m
+[36m</h6>[31m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"MuiContainer-root MuiContainer-maxWidthLg css-12siseb-MuiContainer-root"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"MuiStack-root css-v2woy3-MuiStack-root"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"MuiBox-root css-0"[31m
+        [36m>[31m
+          [36m<h1[31m
+            [33mclass[31m=[32m"MuiTypography-root MuiTypography-h4 css-1313egv-MuiTypography-root"[31m
+          [36m>[31m
+            [0mPainel de progresso[0m
+          [36m</h1>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"MuiTypography-root MuiTypography-body2 css-1i1l7u0-MuiTypography-root"[31m
+          [36m>[31m
+            [0mAcompanhe sua evolu├º├úo em foco, economia gamificada e engajamento recente.[0m
+          [36m</p>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-colorInfo MuiAlert-standardInfo MuiAlert-standard css-hu7tqv-MuiPaper-root-MuiAlert-root"[31m
+          [33mrole[31m=[32m"alert"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"MuiAlert-icon css-1ytlwq5-MuiAlert-icon"[31m
+          [36m>[31m
+            [36m<svg[31m
+              [33maria-hidden[31m=[32m"true"[31m
+              [33mclass[31m=[32m"MuiSvgIcon-root MuiSvgIcon-fontSizeInherit css-1vooibu-MuiSvgIcon-root"[31m
+              [33mdata-testid[31m=[32m"InfoOutlinedIcon"[31m
+              [33mfocusable[31m=[32m"false"[31m
+              [33mviewBox[31m=[32m"0 0 24 24"[31m
+            [36m>[31m
+              [36m<path[31m
+                [33md[31m=[32m"M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20, 12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10, 10 0 0,0 12,2M11,17H13V11H11V17Z"[31m
+              [36m/>[31m
+            [36m</svg>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"MuiAlert-message css-1pxa9xg-MuiAlert-message"[31m
+          [36m>[31m
+            [0mComplete sua primeira sess├úo para come├ºar a acompanhar seu progresso.[0m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"MuiAlert-action css-ki1hdl-MuiAlert-action"[31m
+          [36m>[31m
+            [36m<a[31m
+              [33mclass[31m=[32m"MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit css-u44ztt-MuiButtonBase-root-MuiButton-root"[31m
+              [33mhref[31m=[32m"/pomodoro"[31m
+              [33mtabindex[31m=[32m"0"[31m
+            [36m>[31m
+              [0mIniciar primeira sess├úo[0m
+              [36m<span[31m
+                [33mclass[31m=[32m"MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"[31m
+              [36m/>[31m
+            [36m</a>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"MuiBox-root css-3pc22s"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"MuiPaper-root MuiPaper-outlined MuiPaper-rounded MuiCard-root css-1ctcqla-MuiPaper-root-MuiCard-root"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"MuiCardContent-root css-46bh2p-MuiCardContent-root"[31m
+            [36m>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"MuiTypography-root MuiTypography-caption css-ol7wxs-MuiTypography-root"[31m
+              [36m>[31m
+                [0mSess├Áes conclu├¡das[0m
+              [36m</span>[31m
+              [36m<h5[31m
+                [33mclass[31m=[32m"MuiTypography-root MuiTypography-h5 css-bezmlo-MuiTypography-root"[31m
+              [36m>[31m
+                [0m0[0m
+              [36m</h5>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"MuiPaper-root MuiPaper-outlined MuiPaper-rounded MuiCard-root css-1ctcqla-MuiPaper-root-MuiCard-root"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"MuiCardContent-root css-46bh2p-MuiCardContent-root"[31m
+            [36m>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"MuiTypography-root MuiTypography-caption css-ol7wxs-MuiTypography-root"[31m
+              [36m>[31m
+                [0mTempo total estudado[0m
+              [36m</span>[31m
+              [36m<h5[31m
+                [33mclass[31m=[32m"MuiTypography-root MuiTypography-h5 css-bezmlo-MuiTypography-root"[31m
+              [36m>[31m
+                [0m0 min[0m
+              [36m</h5>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"MuiPaper-root MuiPaper-outlined MuiPaper-rounded MuiCard-root css-1ctcqla-MuiPaper-root-MuiCard-root"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"MuiCardContent-root css-46bh2p-MuiCardContent-root"[31m
+            [36m>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"MuiTypography-root MuiTypography-caption css-ol7wxs-MuiTypography-root"[31m
+              [36m>[31m
+                [0mSaldo atual[0m
+              [36m</span>[31m
+              [36m<h5[31m
+                [33mclass[31m=[32m"MuiTypography-root MuiTypography-h5 css-lr7mnz-MuiTypography-root"[31m
+              [36m>[31m
+                [0m0[0m
+                [0m moedas[0m
+              [36m</h5>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"MuiPaper-root MuiPaper-outlined MuiPaper-rounded MuiCard-root css-1ctcqla-MuiPaper-root-MuiCard-root"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"MuiCardContent-root css-46bh2p-MuiCardContent-root"[31m
+            [36m>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"MuiTypography-root MuiTypography-caption css-ol7wxs-MuiTypography-root"[31m
+              [36m>[31m
+                [0mMoedas ganhas[0m
+              [36m</span>[31m
+              [36m<h5[31m
+                [33mclass[31m=[32m"MuiTypography-root MuiTypography-h5 css-bezmlo-MuiTypography-root"[31m
+              [36m>[31m
+                [0m0[0m
+              [36m</h5>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"MuiPaper-root MuiPaper-outlined MuiPaper-rounded MuiCard-root css-1ctcqla-MuiPaper-root-MuiCard-root"[31m
+          [36m>[31m
+            [36m<div[31m
+       ...[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (3)[39m
+[2m   Start at [22m 00:45:00
+[2m   Duration [22m 20.10s[2m (transform 535ms, setup 0ms, collect 15.46s, tests 1.64s, environment 1.62s, prepare 548ms)[22m
+

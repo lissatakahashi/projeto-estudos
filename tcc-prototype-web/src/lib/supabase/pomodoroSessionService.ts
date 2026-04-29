@@ -24,6 +24,8 @@ export type RegisterFocusSessionInput = {
   trigger: PomodoroCompletionTrigger;
   isValid: boolean;
   invalidReason?: PomodoroInvalidationReason;
+  studyGoal?: string;
+  studySubject?: string;
 };
 
 export type PomodoroSessionServiceError = {
@@ -46,6 +48,8 @@ export function mapFocusSessionToInsert(input: RegisterFocusSessionInput): Pomod
     completedAt,
     focusSequenceIndex: input.focusSequenceIndex,
     cycleIndex: input.cycleIndex,
+    studyGoal: input.studyGoal ?? null,
+    studySubject: input.studySubject ?? null,
     metadata: {
       trigger: input.trigger,
       isValid: input.isValid,

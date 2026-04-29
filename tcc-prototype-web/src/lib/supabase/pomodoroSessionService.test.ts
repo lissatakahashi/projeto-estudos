@@ -49,6 +49,8 @@ describe('pomodoroSessionService', () => {
       cycleIndex: 1,
       trigger: 'timer_elapsed',
       isValid: true,
+      studyGoal: 'Revisar capitulo 2',
+      studySubject: 'Orientacao a Objetos',
     });
 
     const interrupted = mapFocusSessionToInsert({
@@ -68,6 +70,10 @@ describe('pomodoroSessionService', () => {
 
     expect(completed.completedAt).toBe('2026-03-22T10:25:00.000Z');
     expect(interrupted.completedAt).toBeNull();
+    expect(completed.studyGoal).toBe('Revisar capitulo 2');
+    expect(completed.studySubject).toBe('Orientacao a Objetos');
+    expect(interrupted.studyGoal).toBeNull();
+    expect(interrupted.studySubject).toBeNull();
   });
 
   it('stores invalidated reason in metadata and keeps completedAt null', () => {

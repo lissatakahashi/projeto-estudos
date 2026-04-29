@@ -12,6 +12,8 @@
     "@types/node": "^24.10.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
+    "happy-dom": "^20.9.0",
+    "jsdom": "^27.0.1",
     "vite": "^6.4.1",
     "vitest": "^4.0.7"
   }

@@ -26,6 +26,8 @@ describe('buildUserProgressDashboard', () => {
     expect(result.metrics.totalFocusTimeSeconds).toBe(0);
     expect(result.metrics.totalCoinsEarned).toBe(0);
     expect(result.metrics.totalItemsPurchased).toBe(0);
+    expect(result.studyInsights.isEmpty).toBe(true);
+    expect(result.studyInsights.recommendations[0]?.id).toBe('start-history');
     expect(result.recentSessions).toHaveLength(0);
     expect(result.recentActivities).toHaveLength(0);
   });
@@ -146,6 +148,9 @@ describe('buildUserProgressDashboard', () => {
     expect(result.metrics.currentWalletBalance).toBe(42);
     expect(result.metrics.totalCoinsEarned).toBe(10);
     expect(result.metrics.totalItemsPurchased).toBe(1);
+    expect(result.studyInsights.stats.totalCompletedSessions).toBe(2);
+    expect(result.studyInsights.stats.totalInvalidatedSessions).toBe(1);
+    expect(result.studyInsights.stats.completionRatePercent).toBe(66.7);
     expect(result.recentSessions).toHaveLength(3);
     expect(result.currentCycleProgress).toEqual({
       cycleIndex: 1,

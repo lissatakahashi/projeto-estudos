@@ -16,8 +16,12 @@ type FocusSessionRow = Pick<
   | 'actualDurationSeconds'
   | 'focusSequenceIndex'
   | 'cycleIndex'
+  | 'studyGoal'
+  | 'studySubject'
   | 'createdAt'
 >;
+
+type LegacyFocusSessionRow = Omit<FocusSessionRow, 'studyGoal' | 'studySubject'>;
 
 type WalletRow = Database['public']['Tables']['wallets']['Row'];
 type WalletTransactionRow = Database['public']['Tables']['walletTransactions']['Row'];
@@ -34,24 +38,83 @@ export type DashboardServiceError = {
   originalError?: unknown;
 };
 
+const DASHBOARD_FOCUS_BASE_SELECT =
+  'sessionId,status,phaseType,startedAt,endedAt,completedAt,plannedDurationSeconds,actualDurationSeconds,focusSequenceIndex,cycleIndex,createdAt';
+
+const DASHBOARD_FOCUS_WITH_STUDY_SELECT = `${DASHBOARD_FOCUS_BASE_SELECT},studyGoal,studySubject`;
+
+function isMissingStudyActivityColumnError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+
+  const maybeError = error as {
+    code?: string;
+    message?: string;
+    details?: string;
+    hint?: string;
+  };
+
+  const code = maybeError.code ?? '';
+  const combinedMessage = `${maybeError.message ?? ''} ${maybeError.details ?? ''} ${maybeError.hint ?? ''}`.toLowerCase();
+  const mentionsStudyColumns = combinedMessage.includes('studygoal') || combinedMessage.includes('studysubject');
+
+  if (!mentionsStudyColumns) {
+    return false;
+  }
+
+  return code === '42703' || code === 'PGRST204' || combinedMessage.includes('column') || combinedMessage.includes('schema cache');
+}
+
+function normalizeFocusSessions(rows: Array<FocusSessionRow | LegacyFocusSessionRow>): FocusSessionRow[] {
+  return rows.map((row) => {
+    const withStudy = row as FocusSessionRow;
+
+    return {
+      ...row,
+      studyGoal: 'studyGoal' in row ? withStudy.studyGoal ?? null : null,
+      studySubject: 'studySubject' in row ? withStudy.studySubject ?? null : null,
+    };
+  });
+}
+
+async function listFocusSessions(userId: string, includeStudyColumns: boolean): Promise<{
+  data: Array<FocusSessionRow | LegacyFocusSessionRow> | null;
+  error: unknown | null;
+}> {
+  const selectClause = includeStudyColumns ? DASHBOARD_FOCUS_WITH_STUDY_SELECT : DASHBOARD_FOCUS_BASE_SELECT;
+
+  const result = await supabase
+    .from('pomodoroSessions')
+    .select(selectClause)
+    .eq('userId', userId)
+    .eq('phaseType', 'focus')
+    .order('endedAt', { ascending: false });
+
+  return {
+    data: (result.data as Array<FocusSessionRow | LegacyFocusSessionRow> | null) ?? null,
+    error: result.error,
+  };
+}
+
 export async function getDashboardRawData(userId: string): Promise<{
   data: DashboardRawData | null;
   error: DashboardServiceError | null;
 }> {
   try {
-    const [focusResult, walletResult, txResult, inventoryResult] = await Promise.all([
-      supabase
-        .from('pomodoroSessions')
-        .select(
-          'sessionId,status,phaseType,startedAt,endedAt,completedAt,plannedDurationSeconds,actualDurationSeconds,focusSequenceIndex,cycleIndex,createdAt',
-        )
-        .eq('userId', userId)
-        .eq('phaseType', 'focus')
-        .order('endedAt', { ascending: false }),
+    const supportDataPromise = Promise.all([
       getWalletByUserId(userId),
       listWalletTransactions(userId, 200),
       listUserInventory(userId),
     ]);
+
+    let focusResult = await listFocusSessions(userId, true);
+
+    if (focusResult.error && isMissingStudyActivityColumnError(focusResult.error)) {
+      focusResult = await listFocusSessions(userId, false);
+    }
+
+    const [walletResult, txResult, inventoryResult] = await supportDataPromise;
 
     if (focusResult.error) {
       return {
@@ -83,7 +146,7 @@ export async function getDashboardRawData(userId: string): Promise<{
 
     return {
       data: {
-        focusSessions: (focusResult.data ?? []) as FocusSessionRow[],
+        focusSessions: normalizeFocusSessions(focusResult.data ?? []),
         wallet: walletResult.data,
         walletTransactions: txResult.data ?? [],
         inventory: inventoryResult.data ?? [],

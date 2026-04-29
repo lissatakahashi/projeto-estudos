@@ -39,6 +39,18 @@ function formatMinutesFromSeconds(seconds: number): string {
   return `${Math.floor(seconds / 60)} min`;
 }
 
+function formatPercent(value: number): string {
+  return `${value.toFixed(1)}%`;
+}
+
+function formatHour(hour: number | null): string {
+  if (hour === null) {
+    return 'Ainda sem dados';
+  }
+
+  return `${String(hour).padStart(2, '0')}:00`;
+}
+
 function formatDateTime(value: string | null): string {
   if (!value) {
     return 'Ainda não há sessões concluídas';
@@ -227,6 +239,87 @@ const DashboardPage: React.FC = () => {
           </Stack>
         </Paper>
 
+        <Paper variant="outlined" sx={{ borderRadius: 3, p: 2.5 }}>
+          <Stack spacing={2}>
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              Insights de estudo
+            </Typography>
+
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: '1fr',
+                  md: 'repeat(4, minmax(0, 1fr))',
+                },
+                gap: 1.5,
+              }}
+            >
+              <Card variant="outlined" sx={{ borderRadius: 2 }}>
+                <CardContent>
+                  <Typography variant="caption" color="text.secondary">Taxa de conclusão</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    {formatPercent(data.studyInsights.stats.completionRatePercent)}
+                  </Typography>
+                </CardContent>
+              </Card>
+
+              <Card variant="outlined" sx={{ borderRadius: 2 }}>
+                <CardContent>
+                  <Typography variant="caption" color="text.secondary">Sessões invalidadas</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    {data.studyInsights.stats.totalInvalidatedSessions}
+                  </Typography>
+                </CardContent>
+              </Card>
+
+              <Card variant="outlined" sx={{ borderRadius: 2 }}>
+                <CardContent>
+                  <Typography variant="caption" color="text.secondary">Média diária (7 dias)</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    {data.studyInsights.stats.averageCompletedSessionsPerDayLast7Days}
+                  </Typography>
+                </CardContent>
+              </Card>
+
+              <Card variant="outlined" sx={{ borderRadius: 2 }}>
+                <CardContent>
+                  <Typography variant="caption" color="text.secondary">Horário frequente</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    {formatHour(data.studyInsights.stats.mostFrequentStudyHour)}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Box>
+
+            {data.studyInsights.isEmpty ? (
+              <Alert severity="info">
+                Assim que você concluir suas primeiras sessões, vamos mostrar interpretações e recomendações personalizadas aqui.
+              </Alert>
+            ) : (
+              <List disablePadding>
+                {data.studyInsights.recommendations.map((recommendation, index) => (
+                  <React.Fragment key={recommendation.id}>
+                    <ListItem disableGutters>
+                      <ListItemText
+                        primary={recommendation.message}
+                        secondary={recommendation.evidence}
+                      />
+                      <Chip
+                        size="small"
+                        color={recommendation.priority === 'positive' ? 'success' : recommendation.priority === 'high' ? 'warning' : 'default'}
+                        label={recommendation.priority === 'positive' ? 'Destaque' : recommendation.priority === 'high' ? 'Atenção' : 'Sugestão'}
+                        variant="outlined"
+                      />
+                    </ListItem>
+                    {index < data.studyInsights.recommendations.length - 1 && <Divider component="li" />}
+                  </React.Fragment>
+                ))}
+              </List>
+            )}
+          </Stack>
+        </Paper>
+
         <BadgesPanel badges={badges} userBadges={userBadges} loading={badgesLoading} />
 
         <Box
@@ -252,7 +345,7 @@ const DashboardPage: React.FC = () => {
                     <ListItem disableGutters>
                       <ListItemText
                         primary={`${formatMinutesFromSeconds(sessionItem.actualDurationSeconds)} • ${new Date(sessionItem.endedAt).toLocaleString('pt-BR')}`}
-                        secondary={`Planejado: ${formatMinutesFromSeconds(sessionItem.plannedDurationSeconds)}`}
+                        secondary={`Planejado: ${formatMinutesFromSeconds(sessionItem.plannedDurationSeconds)}${sessionItem.studyGoal ? ` • Objetivo: ${sessionItem.studyGoal}` : ''}${sessionItem.studySubject ? ` • Conteúdo: ${sessionItem.studySubject}` : ''}`}
                       />
                       <Chip
                         label={formatSessionStatus(sessionItem.status)}

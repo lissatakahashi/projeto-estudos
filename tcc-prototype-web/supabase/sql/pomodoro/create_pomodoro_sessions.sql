@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS public."pomodoroSessions" (
     "completedAt" TIMESTAMPTZ,
     "focusSequenceIndex" INTEGER,
     "cycleIndex" INTEGER,
+    "studyGoal" TEXT,
+    "studySubject" TEXT,
     "sourcePomodoroId" TEXT NOT NULL UNIQUE,
     "metadata" JSONB DEFAULT '{}'::jsonb,
     "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),

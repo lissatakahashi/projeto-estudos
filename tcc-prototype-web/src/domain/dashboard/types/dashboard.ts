@@ -1,3 +1,5 @@
+import type { StudyInsightsPayload } from './studyInsights';
+
 export type DashboardSessionStatus = 'completed' | 'invalidated' | 'interrupted';
 
 export type DashboardSummaryMetrics = {
@@ -21,6 +23,8 @@ export type DashboardRecentSession = {
   actualDurationSeconds: number;
   focusSequenceIndex: number | null;
   cycleIndex: number | null;
+  studyGoal: string | null;
+  studySubject: string | null;
 };
 
 export type DashboardRecentActivityType =
@@ -53,6 +57,7 @@ export type DashboardCycleProgress = {
 
 export type DashboardPayload = {
   metrics: DashboardSummaryMetrics;
+  studyInsights: StudyInsightsPayload;
   recentSessions: DashboardRecentSession[];
   recentActivities: DashboardRecentActivity[];
   recentProgress: DashboardRecentProgressPoint[];

@@ -1,6 +1,7 @@
 import { PomodoroMode } from './enums/PomodoroMode';
 import { PomodoroStatus } from './enums/PomodoroStatus';
 import type { PomodoroInvalidationReason } from './PomodoroInvalidation';
+import type { PomodoroStudyActivityMetadata } from './PomodoroStudyActivity';
 
 /**
  * PomodoroId
@@ -39,4 +40,12 @@ export type Pomodoro = {
   invalidReason?: PomodoroInvalidationReason;
   startedAt?: string; // ISO
   endedAt?: string; // ISO
+  studyGoal?: string;
+  studySubject?: string;
+};
+
+export type StartPomodoroPayload = {
+  duration?: number;
+  mode?: Pomodoro['mode'];
+  studyActivity?: PomodoroStudyActivityMetadata;
 };

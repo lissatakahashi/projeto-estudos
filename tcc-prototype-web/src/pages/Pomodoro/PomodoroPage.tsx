@@ -29,6 +29,10 @@ import type {
     PomodoroSettingsErrors,
 } from '../../domain/pomodoro/types/PomodoroSettings';
 import { settingsToDraft } from '../../domain/pomodoro/types/PomodoroSettings';
+import type {
+    PomodoroStudyActivityFormData,
+    PomodoroStudyActivityFormErrors,
+} from '../../domain/pomodoro/types/PomodoroStudyActivity';
 import {
     isPomodoroProgressAtRisk,
 } from '../../domain/pomodoro/usecases/pomodoroExitProtection';
@@ -41,6 +45,9 @@ import {
     normalizeSettingsDraftValue,
     validatePomodoroSettingsDraft,
 } from '../../domain/pomodoro/validation/pomodoroSettingsValidation';
+import {
+    validatePomodoroStudyActivity,
+} from '../../domain/pomodoro/validation/pomodoroStudyActivityValidation';
 import { useDashboardProgress } from '../../hooks/useDashboardProgress';
 import { useAuthSession } from '../../lib/supabase/hooks';
 import { usePomodoroStore } from '../../state/usePomodoroStore';
@@ -91,6 +98,11 @@ const PomodoroPage: React.FC = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [draft, setDraft] = useState<PomodoroSettingsDraft>(settingsToDraft(DEFAULT_POMODORO_SETTINGS));
   const [fieldErrors, setFieldErrors] = useState<PomodoroSettingsErrors>({});
+  const [activityDraft, setActivityDraft] = useState<PomodoroStudyActivityFormData>({
+    studyGoal: '',
+    studySubject: '',
+  });
+  const [activityErrors, setActivityErrors] = useState<PomodoroStudyActivityFormErrors>({});
   const [inFlightAction, setInFlightAction] = useState<'start' | 'pause' | 'resume' | 'advance' | 'cancel' | null>(null);
 
   const hiddenAtRef = useRef<number | null>(null);
@@ -169,9 +181,37 @@ const PomodoroPage: React.FC = () => {
   };
 
   const handleStart = async () => {
+    const validation = validatePomodoroStudyActivity(activityDraft);
+    setActivityErrors(validation.errors);
+
+    if (!validation.isValid || !validation.normalized) {
+      return;
+    }
+
     await runAction('start', async () => {
-      await start();
+      const started = await start({
+        studyActivity: validation.normalized,
+      });
+
+      if (started) {
+        setActivityDraft({
+          studyGoal: validation.normalized?.studyGoal ?? '',
+          studySubject: validation.normalized?.studySubject ?? '',
+        });
+      }
     });
+  };
+
+  const handleStudyActivityChange = (field: keyof PomodoroStudyActivityFormData) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const nextValue = event.target.value;
+    setActivityDraft((previous) => ({ ...previous, [field]: nextValue }));
+
+    if (activityErrors[field]) {
+      setActivityErrors((previous) => ({
+        ...previous,
+        [field]: undefined,
+      }));
+    }
   };
 
   const handlePause = async () => {
@@ -323,6 +363,38 @@ const PomodoroPage: React.FC = () => {
 
           <Box>
             {!pomodoro && (
+              <Stack spacing={1.5} sx={{ mb: 2.5 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  Planejamento da sessão
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Registre sua intenção antes de iniciar para fortalecer histórico e recomendações de estudo.
+                </Typography>
+                <TextField
+                  label="Objetivo da sessão"
+                  value={activityDraft.studyGoal}
+                  onChange={handleStudyActivityChange('studyGoal')}
+                  placeholder="Ex.: Revisar capítulo 2"
+                  helperText={activityErrors.studyGoal ?? 'Campo obrigatório. Resuma sua meta de estudo em uma frase curta.'}
+                  error={Boolean(activityErrors.studyGoal)}
+                  aria-invalid={Boolean(activityErrors.studyGoal)}
+                  required
+                  fullWidth
+                />
+                <TextField
+                  label="O que vai estudar"
+                  value={activityDraft.studySubject}
+                  onChange={handleStudyActivityChange('studySubject')}
+                  placeholder="Ex.: Orientação a Objetos"
+                  helperText={activityErrors.studySubject ?? 'Opcional, mas recomendado para rastrear conteúdo e gerar estatísticas por tema.'}
+                  error={Boolean(activityErrors.studySubject)}
+                  aria-invalid={Boolean(activityErrors.studySubject)}
+                  fullWidth
+                />
+              </Stack>
+            )}
+
+            {!pomodoro && (
               <Button
                 onClick={handleStart}
                 variant="contained"
@@ -403,6 +475,22 @@ const PomodoroPage: React.FC = () => {
             )}
           </Box>
 
+          {pomodoro?.studyGoal && (
+            <Stack spacing={0.5} aria-live="polite">
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                Sessão em execução
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Objetivo: {pomodoro.studyGoal}
+              </Typography>
+              {pomodoro.studySubject && (
+                <Typography variant="body2" color="text.secondary">
+                  Conteúdo: {pomodoro.studySubject}
+                </Typography>
+              )}
+            </Stack>
+          )}
+
           <Typography variant="body2" color="text.secondary" aria-live="polite">
             {pomodoro
               ? pomodoro.isValid
@@ -413,7 +501,7 @@ const PomodoroPage: React.FC = () => {
 
           <Typography variant="caption" color="text.secondary">
             {settings.keepSessionRunningOnHiddenTab
-              ? 'Trocas de guia do navegador nao invalidam a sessao enquanto esta opcao estiver ativa. Sair da pagina ainda exige confirmacao para evitar perda acidental.'
+              ? 'Trocas de guia do navegador não invalidam a sessão enquanto esta opção estiver ativa. Sair da página ainda exige confirmacao para evitar perda acidental.'
               : 'Se a sessao de foco for abandonada (cancelamento, troca de rota, recarregamento, fechamento ou aba oculta por tempo excessivo), ela e invalidada e nao conta progresso.'}
           </Typography>
 

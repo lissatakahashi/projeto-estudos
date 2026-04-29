@@ -22,6 +22,7 @@ export type PomodoroHistoryItemId = string;
  * - `actualDuration`: elapsed seconds during the session
  * - `isValid`: whether session counted as valid
  * - `invalidReason`: optional reason when invalid (e.g., 'lost_focus')
+ * - `studyGoal` / `studySubject`: context captured before the session began
  */
 export type PomodoroHistoryItem = {
   pomodoroHistoryItemId: PomodoroHistoryItemId;
@@ -32,4 +33,6 @@ export type PomodoroHistoryItem = {
   actualDuration: number; // seconds elapsed
   isValid: boolean;
   invalidReason?: PomodoroInvalidationReason;
+  studyGoal?: string;
+  studySubject?: string;
 };

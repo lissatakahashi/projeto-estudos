@@ -3,7 +3,7 @@ import { awardFocusSessionCoins } from '../domain/economy/usecases/awardFocusSes
 import { resolveFeedbackMessage } from '../domain/feedback/catalog';
 import type { FeedbackVariant } from '../domain/feedback/types';
 import { DEFAULT_POMODORO_SETTINGS } from '../domain/pomodoro/constants/pomodoroSettings';
-import { Pomodoro, PomodoroCycleState, PomodoroHistoryItem } from '../domain/pomodoro/types';
+import { Pomodoro, PomodoroCycleState, PomodoroHistoryItem, StartPomodoroPayload } from '../domain/pomodoro/types';
 import {
     getPomodoroInvalidationReasonLabel,
     type PomodoroInvalidationReason
@@ -79,7 +79,7 @@ type PomodoroStore = {
   userId: string | null;
   // actions
   setUserId: (id: string | null) => void;
-  startPomodoro: (opts?: { duration?: number; mode?: Pomodoro['mode'] }) => Promise<boolean>;
+  startPomodoro: (opts?: StartPomodoroPayload) => Promise<boolean>;
   tickPomodoro: () => void;
   pausePomodoro: () => Promise<void>;
   resumePomodoro: () => Promise<void>;
@@ -287,6 +287,8 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
       isValid: true,
       lostFocusSeconds: 0,
       startedAt: new Date().toISOString(),
+      studyGoal: opts.studyActivity?.studyGoal,
+      studySubject: opts.studyActivity?.studySubject,
     };
 
     set({
@@ -437,6 +439,8 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
         actualDuration: completionResolution.actualDurationSeconds,
         isValid: p.isValid,
         invalidReason: p.invalidReason,
+        studyGoal: p.studyGoal,
+        studySubject: p.studySubject,
       };
       const newHistory = [historyItem, ...s.history].slice(0, 200);
       const updatedPomodoro: Pomodoro = { ...p, status: 'finished' as const, endedAt };
@@ -506,6 +510,8 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
           isValid: true,
           lostFocusSeconds: 0,
           startedAt: nowIso,
+          studyGoal: p.studyGoal,
+          studySubject: p.studySubject,
         };
         phaseEndsAtEpochMs = Date.now() + runningCycle.remainingSeconds * 1000;
       }
@@ -557,6 +563,8 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
           trigger: completionTrigger,
           isValid: p.isValid,
           invalidReason: p.invalidReason,
+          studyGoal: p.studyGoal,
+          studySubject: p.studySubject,
         });
 
         if (sessionRow) {
@@ -762,6 +770,8 @@ export const usePomodoroStore = create<PomodoroStore>((set, get) => ({
             actualDuration: p.duration, // Simplified
             isValid: p.isValid,
             invalidReason: p.invalidReason,
+            studyGoal: p.studyGoal,
+            studySubject: p.studySubject,
           };
         });
 

@@ -6,6 +6,7 @@ import type {
     DashboardRecentSession,
     DashboardSessionStatus,
 } from '../types/dashboard';
+import { buildStudyInsightsPayload } from './buildStudyInsights';
 
 const RECENT_SESSIONS_LIMIT = 5;
 const RECENT_ACTIVITY_LIMIT = 10;
@@ -161,6 +162,8 @@ export function buildUserProgressDashboard(input: DashboardRawData): DashboardPa
     actualDurationSeconds: session.actualDurationSeconds,
     focusSequenceIndex: session.focusSequenceIndex,
     cycleIndex: session.cycleIndex,
+    studyGoal: session.studyGoal,
+    studySubject: session.studySubject,
   }));
 
   const completedSessions = mappedSessions.filter((session) => session.status === 'completed');
@@ -184,6 +187,13 @@ export function buildUserProgressDashboard(input: DashboardRawData): DashboardPa
     lastCompletedSessionAt: lastCompletedSession?.completedAt ?? lastCompletedSession?.endedAt ?? null,
   };
 
+  const studyInsights = buildStudyInsightsPayload({
+    sessions: mappedSessions,
+    walletTransactions: input.walletTransactions,
+    totalItemsPurchased: input.inventory.length,
+    currentWalletBalance: input.wallet?.balance ?? 0,
+  });
+
   const isEmpty =
     metrics.completedFocusSessionsCount === 0
     && metrics.totalItemsPurchased === 0
@@ -192,6 +202,7 @@ export function buildUserProgressDashboard(input: DashboardRawData): DashboardPa
 
   return {
     metrics,
+    studyInsights,
     recentSessions,
     recentActivities: mapRecentActivities(input, completedSessions),
     recentProgress: buildRecentProgress(completedSessions),

@@ -24,6 +24,8 @@ interface PomodoroMetadata {
     isValid?: boolean;
     invalidReason?: string;
     lostFocusSeconds?: number;
+    studyGoal?: string;
+    studySubject?: string;
 }
 
 function parseInvalidReason(value: string | undefined): PomodoroInvalidationReason | undefined {
@@ -190,6 +192,8 @@ export function mapRecordToPomodoro(record: PomodoroRow): Pomodoro {
         startedAt: record.startedAt ?? undefined,
         endedAt: record.endedAt ?? undefined,
         invalidReason: parseInvalidReason(metadata?.invalidReason),
+        studyGoal: metadata?.studyGoal,
+        studySubject: metadata?.studySubject,
     };
 }
 
@@ -213,6 +217,8 @@ export function mapPomodoroToRecord(
             isValid: pomodoro.isValid,
             invalidReason: pomodoro.invalidReason,
             lostFocusSeconds: pomodoro.lostFocusSeconds,
+            studyGoal: pomodoro.studyGoal,
+            studySubject: pomodoro.studySubject,
         } as unknown as Json,
     };
 }

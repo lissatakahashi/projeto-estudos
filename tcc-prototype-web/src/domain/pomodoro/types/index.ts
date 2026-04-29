@@ -13,4 +13,5 @@ export * from './PomodoroCycle';
 export * from './PomodoroHistoryItem';
 export * from './PomodoroInvalidation';
 export * from './PomodoroSettings';
+export * from './PomodoroStudyActivity';
 

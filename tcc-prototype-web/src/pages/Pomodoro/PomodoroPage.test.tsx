@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { StartPomodoroPayload } from '../../domain/pomodoro/types/Pomodoro';
 import type { PomodoroSettings } from '../../domain/pomodoro/types/PomodoroSettings';
 
 type MockPomodoroStoreState = {
@@ -31,7 +32,7 @@ type MockPomodoroStoreState = {
   completedFocusSessionsCount: number;
   totalFocusStudySeconds: number;
   startError: string | null;
-  startPomodoro: () => Promise<boolean>;
+  startPomodoro: (payload?: StartPomodoroPayload) => Promise<boolean>;
   pausePomodoro: () => Promise<void>;
   resumePomodoro: () => Promise<void>;
   tickPomodoro: () => void;
@@ -329,5 +330,42 @@ describe('PomodoroPage - orientacoes da configuracao', () => {
     window.dispatchEvent(beforeUnloadEvent);
 
     expect(beforeUnloadEvent.defaultPrevented).toBe(false);
+  });
+
+  it('valida objetivo antes de iniciar a sessao', () => {
+    render(
+      <BrowserRouter>
+        <PomodoroPage />
+      </BrowserRouter>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /iniciar sessao/i }));
+
+    expect(screen.getByText(/Descreva um objetivo com ao menos 3 caracteres/i)).toBeTruthy();
+    expect((usePomodoroStoreMock as unknown as { getState: () => MockPomodoroStoreState }).getState().startPomodoro).not.toHaveBeenCalled();
+  });
+
+  it('inicia sessao vinculando objetivo e conteudo informados', () => {
+    render(
+      <BrowserRouter>
+        <PomodoroPage />
+      </BrowserRouter>,
+    );
+
+    fireEvent.change(screen.getByLabelText(/Objetivo da sessao|Objetivo da sessão/i), {
+      target: { value: 'Revisar capitulo 2' },
+    });
+    fireEvent.change(screen.getByLabelText(/O que vai estudar/i), {
+      target: { value: 'Algoritmos de ordenacao' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /iniciar sessao/i }));
+
+    expect((usePomodoroStoreMock as unknown as { getState: () => MockPomodoroStoreState }).getState().startPomodoro).toHaveBeenCalledWith({
+      studyActivity: {
+        studyGoal: 'Revisar capitulo 2',
+        studySubject: 'Algoritmos de ordenacao',
+      },
+    });
   });
 });

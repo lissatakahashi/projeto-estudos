@@ -111,6 +111,8 @@ export type Database = {
           completedAt: string | null
           focusSequenceIndex: number | null
           cycleIndex: number | null
+          studyGoal: string | null
+          studySubject: string | null
           sourcePomodoroId: string
           metadata: Json | null
           createdAt: string
@@ -128,6 +130,8 @@ export type Database = {
           completedAt?: string | null
           focusSequenceIndex?: number | null
           cycleIndex?: number | null
+          studyGoal?: string | null
+          studySubject?: string | null
           sourcePomodoroId: string
           metadata?: Json | null
           createdAt?: string
@@ -145,6 +149,8 @@ export type Database = {
           completedAt?: string | null
           focusSequenceIndex?: number | null
           cycleIndex?: number | null
+          studyGoal?: string | null
+          studySubject?: string | null
           sourcePomodoroId?: string
           metadata?: Json | null
           createdAt?: string
