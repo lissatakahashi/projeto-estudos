@@ -1,52 +1,52 @@
 import {
-    Alert,
-    Box,
-    Button,
-    Chip,
-    CircularProgress,
-    Container,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    FormControlLabel,
-    Paper,
-    Stack,
-    Switch,
-    TextField,
-    Typography,
+  Alert,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControlLabel,
+  Paper,
+  Stack,
+  Switch,
+  TextField,
+  Typography,
 } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { DEFAULT_POMODORO_SETTINGS } from '../../domain/pomodoro/constants/pomodoroSettings';
 import {
-    getPomodoroFieldHelperText,
-    POMODORO_SETTINGS_FIELD_GUIDANCE,
-    POMODORO_SETTINGS_GENERAL_GUIDANCE,
+  getPomodoroFieldHelperText,
+  POMODORO_SETTINGS_FIELD_GUIDANCE,
+  POMODORO_SETTINGS_GENERAL_GUIDANCE,
 } from '../../domain/pomodoro/constants/pomodoroSettingsGuidance';
 import { getPomodoroInvalidationReasonLabel } from '../../domain/pomodoro/types/PomodoroInvalidation';
 import type {
-    PomodoroSettingsDraft,
-    PomodoroSettingsErrors,
+  PomodoroSettingsDraft,
+  PomodoroSettingsErrors,
 } from '../../domain/pomodoro/types/PomodoroSettings';
 import { settingsToDraft } from '../../domain/pomodoro/types/PomodoroSettings';
 import type {
-    PomodoroStudyActivityFormData,
-    PomodoroStudyActivityFormErrors,
+  PomodoroStudyActivityFormData,
+  PomodoroStudyActivityFormErrors,
 } from '../../domain/pomodoro/types/PomodoroStudyActivity';
 import {
-    isPomodoroProgressAtRisk,
+  isPomodoroProgressAtRisk,
 } from '../../domain/pomodoro/usecases/pomodoroExitProtection';
 import {
-    canEditPomodoroSettings,
-    isPomodoroConfigLocked,
-    POMODORO_SETTINGS_LOCK_REASON,
+  canEditPomodoroSettings,
+  isPomodoroConfigLocked,
+  POMODORO_SETTINGS_LOCK_REASON,
 } from '../../domain/pomodoro/usecases/pomodoroSettingsLock';
 import {
-    normalizeSettingsDraftValue,
-    validatePomodoroSettingsDraft,
+  normalizeSettingsDraftValue,
+  validatePomodoroSettingsDraft,
 } from '../../domain/pomodoro/validation/pomodoroSettingsValidation';
 import {
-    validatePomodoroStudyActivity,
+  validatePomodoroStudyActivity,
 } from '../../domain/pomodoro/validation/pomodoroStudyActivityValidation';
 import { useDashboardProgress } from '../../hooks/useDashboardProgress';
 import { useAuthSession } from '../../lib/supabase/hooks';
@@ -83,7 +83,6 @@ const PomodoroPage: React.FC = () => {
   const resume = usePomodoroStore((s) => s.resumePomodoro);
   const tick = usePomodoroStore((s) => s.tickPomodoro);
   const reset = usePomodoroStore((s) => s.resetPomodoro);
-  const advanceToNextPhase = usePomodoroStore((s) => s.advanceToNextPhase);
   const penalize = usePomodoroStore((s) => s.penalizeLostFocus);
   const load = usePomodoroStore((s) => s.loadFromStorage);
   const loadSettings = usePomodoroStore((s) => s.loadSettings);
@@ -103,7 +102,7 @@ const PomodoroPage: React.FC = () => {
     studySubject: '',
   });
   const [activityErrors, setActivityErrors] = useState<PomodoroStudyActivityFormErrors>({});
-  const [inFlightAction, setInFlightAction] = useState<'start' | 'pause' | 'resume' | 'advance' | 'cancel' | null>(null);
+  const [inFlightAction, setInFlightAction] = useState<'start' | 'pause' | 'resume' | 'cancel' | null>(null);
 
   const hiddenAtRef = useRef<number | null>(null);
 
@@ -165,7 +164,7 @@ const PomodoroPage: React.FC = () => {
   }, [settings, settingsOpen]);
 
   const runAction = async (
-    action: 'start' | 'pause' | 'resume' | 'advance' | 'cancel',
+    action: 'start' | 'pause' | 'resume' | 'cancel',
     callback: () => Promise<void | boolean>,
   ) => {
     if (inFlightAction) {
@@ -226,12 +225,6 @@ const PomodoroPage: React.FC = () => {
     await runAction('cancel', reset);
   };
 
-  const handleAdvancePhase = async () => {
-    await runAction('advance', async () => {
-      await advanceToNextPhase();
-    });
-  };
-
   const handleOpenSettings = () => {
     if (!canEditPomodoroSettings({ cyclePhase: cycleState.phase, activePomodoro: pomodoro })) {
       return;
@@ -275,7 +268,15 @@ const PomodoroPage: React.FC = () => {
     }
   };
 
-  const modeLabel = cycleState.phase === 'paused' ? `paused (${cycleState.activeMode})` : cycleState.phase;
+  const formatPomodoroLabel = (value: string) => {
+    if (value === 'idle') return 'parado';
+    if (value === 'focus') return 'foco';
+    return value.replace('_', ' ');
+  };
+  const modeLabel =
+    cycleState.phase === 'paused'
+      ? `paused (${formatPomodoroLabel(cycleState.activeMode)})`
+      : formatPomodoroLabel(cycleState.phase);
   const displaySeconds = pomodoro ? pomodoro.remaining : cycleState.remainingSeconds;
   const isSettingsLocked = isPomodoroConfigLocked({
     cyclePhase: cycleState.phase,
@@ -345,11 +346,11 @@ const PomodoroPage: React.FC = () => {
               {formatTime(displaySeconds)}
             </Typography>
             <Stack direction="row" spacing={1.5} sx={{ mt: 1, flexWrap: 'wrap' }}>
-              <Chip label={`Modo atual: ${modeLabel.replace('_', ' ')}`} color="primary" variant="outlined" />
-              <Chip label={`Próximo modo: ${cycleState.nextMode.replace('_', ' ')}`} variant="outlined" />
+              <Chip label={`Modo atual: ${modeLabel}`} color="primary" variant="outlined" />
+              <Chip label={`Próximo modo: ${formatPomodoroLabel(cycleState.nextMode)}`} variant="outlined" />
               <Chip label={`Ciclo: ${settings.cyclesBeforeLongBreak} focos por pausa longa`} variant="outlined" />
               <Chip label={`Focos no ciclo: ${focusCycleProgress}`} variant="outlined" />
-              <Chip label={`Focos concluidos validos: ${displayedCompletedFocusSessionsCount}`} variant="outlined" />
+              <Chip label={`Focos concluídos válidos: ${displayedCompletedFocusSessionsCount}`} variant="outlined" />
               <Chip label={`Tempo total estudado: ${displayedStudiedMinutes} min`} variant="outlined" />
               <Chip label={walletLoading ? 'Carteira: carregando...' : `Carteira: ${walletBalance} moedas`} color="success" variant="outlined" />
             </Stack>
@@ -417,15 +418,6 @@ const PomodoroPage: React.FC = () => {
                   >
                     {inFlightAction === 'pause' ? 'Pausando...' : 'Pausar'}
                   </Button>
-                  <Button
-                    onClick={handleAdvancePhase}
-                    variant="contained"
-                    aria-label="Avancar fase Pomodoro"
-                    fullWidth
-                    disabled={hasActionInFlight}
-                  >
-                    {inFlightAction === 'advance' ? 'Avancando...' : 'Avancar fase'}
-                  </Button>
                 </Stack>
                 <Button
                   onClick={handleCancel}
@@ -450,15 +442,6 @@ const PomodoroPage: React.FC = () => {
                     disabled={hasActionInFlight}
                   >
                     {inFlightAction === 'resume' ? 'Retomando...' : 'Retomar'}
-                  </Button>
-                  <Button
-                    onClick={handleAdvancePhase}
-                    variant="outlined"
-                    aria-label="Avancar fase Pomodoro pausada"
-                    fullWidth
-                    disabled={hasActionInFlight}
-                  >
-                    {inFlightAction === 'advance' ? 'Avancando...' : 'Avancar fase'}
                   </Button>
                 </Stack>
                 <Button
@@ -501,12 +484,8 @@ const PomodoroPage: React.FC = () => {
 
           <Typography variant="caption" color="text.secondary">
             {settings.keepSessionRunningOnHiddenTab
-              ? 'Trocas de guia do navegador não invalidam a sessão enquanto esta opção estiver ativa. Sair da página ainda exige confirmacao para evitar perda acidental.'
+              ? 'Trocas de guia do navegador não invalidam a sessão enquanto esta opção estiver ativa. Sair da página ainda exige confirmação para evitar perda acidental.'
               : 'Se a sessao de foco for abandonada (cancelamento, troca de rota, recarregamento, fechamento ou aba oculta por tempo excessivo), ela e invalidada e nao conta progresso.'}
-          </Typography>
-
-          <Typography variant="caption" color="text.secondary">
-            Avançar fase foi habilitado por design para testes e acessibilidade operacional, incluindo pulo de pausas quando necessário.
           </Typography>
 
           {latestWalletTransaction && (
@@ -601,7 +580,7 @@ const PomodoroPage: React.FC = () => {
             />
 
             <Typography variant="caption" color="text.secondary">
-              Quando ativado, alternar para outra guia nao invalida a sessao de foco por perda de visibilidade.
+              Quando ativado, alternar para outra guia não invalida a sessão de foco por perda de visibilidade.
             </Typography>
 
             {pomodoro && pomodoro.status !== 'finished' && (

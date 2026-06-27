@@ -17,6 +17,7 @@ import ShopItemFormDialog from '../../components/admin/ShopItemFormDialog';
 import ShopItemsAdminTable from '../../components/admin/ShopItemsAdminTable';
 import { SHOP_ITEM_CATEGORIES, type ShopItem } from '../../domain/shop/types/shop';
 import { useAdminShopCatalog } from '../../hooks/useAdminShopCatalog';
+import { getShopCategoryLabel } from '../../lib/shopCategory';
 import { useAuthSession } from '../../lib/supabase/hooks';
 
 const ShopCatalogAdminPage: React.FC = () => {
@@ -75,11 +76,6 @@ const ShopCatalogAdminPage: React.FC = () => {
           </Typography>
         </Box>
 
-        <Alert severity="info">
-          Controle de acesso neste estágio: área separada com autenticação obrigatória no front-end. Para ambiente de produção,
-          aplique autorização forte no Supabase (RLS/policies por perfil admin).
-        </Alert>
-
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} alignItems={{ md: 'center' }}>
           {headerChips.map((chip) => (
             <Chip key={chip.label} label={chip.label} variant="outlined" />
@@ -117,7 +113,7 @@ const ShopCatalogAdminPage: React.FC = () => {
             >
               <MenuItem value="all">Todas</MenuItem>
               {SHOP_ITEM_CATEGORIES.map((category) => (
-                <MenuItem key={category} value={category}>{category}</MenuItem>
+                <MenuItem key={category} value={category}>{getShopCategoryLabel(category)}</MenuItem>
               ))}
             </Select>
           </FormControl>

@@ -10,9 +10,18 @@ export function normalizeEmail(email: string): string {
 
 export function normalizeBrazilianPhone(phone: string): string | null {
   const digitsOnly = phone.replace(/\D/g, '');
+  const trimmed = phone.trim();
 
   if (!digitsOnly) {
     return null;
+  }
+
+  if (trimmed.startsWith('+')) {
+    if (digitsOnly.length < 8 || digitsOnly.length > 15) {
+      return null;
+    }
+
+    return `+${digitsOnly}`;
   }
 
   const localDigits = digitsOnly.startsWith('55') && (digitsOnly.length === 12 || digitsOnly.length === 13)

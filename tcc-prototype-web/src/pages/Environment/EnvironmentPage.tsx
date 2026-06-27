@@ -19,6 +19,7 @@ import {
     type EnvironmentSlotName,
 } from '../../domain/environment/types/environment';
 import { getCompatibleInventoryItemsBySlot } from '../../domain/environment/usecases/getCompatibleInventoryItemsBySlot';
+import { getShopCategoryLabel } from '../../lib/shopCategory';
 import { getShopRarityPresentation } from '../../lib/shopRarity';
 import { useEnvironmentStore } from '../../state/useEnvironmentStore';
 import { usePetStore } from '../../state/usePetStore';
@@ -36,6 +37,9 @@ const slotLayoutByName: Record<EnvironmentSlotName, { top: string; left: string;
 };
 
 const hiddenSlotsOnScene: EnvironmentSlotName[] = ['desk'];
+const environmentSlotLabelByName = new Map(
+  ENVIRONMENT_SLOT_DEFINITIONS.map((slot) => [slot.slotName, slot.label]),
+);
 
 const EnvironmentPage: React.FC = () => {
   const userId = useShopStore((s) => s.userId);
@@ -100,7 +104,7 @@ const EnvironmentPage: React.FC = () => {
       <Stack spacing={3}>
         <Box>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
-            Ambiente Virtual
+            Ambiente virtual
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
             Personalize seu ambiente de estudo aplicando itens do inventário em posições fixas e persistentes.
@@ -264,7 +268,7 @@ const EnvironmentPage: React.FC = () => {
                               key={category}
                               size="small"
                               variant="outlined"
-                              label={`Categoria: ${category}`}
+                              label={`Categoria: ${getShopCategoryLabel(category)}`}
                             />
                           ))}
                         </Stack>
@@ -305,7 +309,7 @@ const EnvironmentPage: React.FC = () => {
                                   {entry.item.name}
                                 </Typography>
                                 <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
-                                  <Chip size="small" label={entry.item.category} />
+                                  <Chip size="small" label={getShopCategoryLabel(entry.item.category)} />
                                   <Chip
                                     size="small"
                                     color={rarityPresentation.color}
@@ -316,7 +320,7 @@ const EnvironmentPage: React.FC = () => {
                                     <Chip
                                       size="small"
                                       variant="outlined"
-                                      label={`Posição recomendada: ${entry.item.environmentSlot}`}
+                                      label={`Posição recomendada: ${environmentSlotLabelByName.get(entry.item.environmentSlot) ?? entry.item.environmentSlot}`}
                                     />
                                   )}
                                 </Stack>

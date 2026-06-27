@@ -16,9 +16,8 @@ import React, { useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import {
     getInventoryApplyTargetLabel,
-    getInventoryCustomizationStatusLabel,
     getInventoryEquipSlotLabel,
-    getInventoryEquipStatusLabel,
+    getInventoryEquipStatusLabel
 } from '../../lib/inventoryPresentation';
 import { getShopCategoryLabel } from '../../lib/shopCategory';
 import { getShopRarityPresentation } from '../../lib/shopRarity';
@@ -139,7 +138,6 @@ const InventoryPage: React.FC = () => {
                           ...rarityPresentation.sx,
                         }}
                       />
-                      <Chip size="small" color="success" label={`Qtd: ${entry.quantity}`} />
                       <Chip
                         size="small"
                         color={entry.isEquipped ? 'success' : 'default'}
@@ -155,19 +153,27 @@ const InventoryPage: React.FC = () => {
                     <Divider sx={{ my: 1.5 }} />
 
                     <Stack spacing={0.75}>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                        Status de personalização: {getInventoryCustomizationStatusLabel(entry.isReadyForCustomization)}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                        Slot previsto: {getInventoryEquipSlotLabel(entry.equipSlot)}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                        Alvo previsto: {getInventoryApplyTargetLabel(entry.appliedTarget)}
-                      </Typography>
+                      {entry.equipSlot && (
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                          Slot previsto: {getInventoryEquipSlotLabel(entry.equipSlot)}
+                        </Typography>
+                      )}
+                      {entry.appliedTarget && (
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                          Alvo previsto: {getInventoryApplyTargetLabel(entry.appliedTarget)}
+                        </Typography>
+                      )}
                     </Stack>
 
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
-                      Adquirido em: {new Date(entry.acquiredAt).toLocaleString('pt-BR')}
+                      Adquirido em:{' '}
+                      {new Date(entry.acquiredAt).toLocaleString('pt-BR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
                     </Typography>
                   </CardContent>
                 </Card>

@@ -118,10 +118,14 @@ function mapRecentActivities(input: DashboardRawData, completedSessions: Dashboa
 
       let type: DashboardRecentActivity['type'] = isCredit ? 'coins_earned' : 'coins_spent';
       let title = isCredit ? 'Moedas creditadas' : 'Moedas debitadas';
+      let description = transaction.description ?? `Movimentação de ${transaction.amount} moedas.`;
 
       if (transaction.reason === 'pet_fed') {
         type = 'pet_action';
         title = 'Interação com pet';
+        if (!transaction.description || transaction.description === 'Alimentacao do personagem virtual.') {
+          description = 'Alimentação do personagem virtual.';
+        }
       } else if (transaction.reason === 'manual_adjustment' || transaction.reason === 'refund') {
         type = 'system_adjustment';
         title = 'Ajuste de saldo';
@@ -131,7 +135,7 @@ function mapRecentActivities(input: DashboardRawData, completedSessions: Dashboa
         id: `wallet-${transaction.transactionId}`,
         type,
         title,
-        description: transaction.description ?? `Movimentação de ${transaction.amount} moedas.`,
+        description,
         createdAt: transaction.createdAt,
         coinsDelta: isCredit ? transaction.amount : -transaction.amount,
       };

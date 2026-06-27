@@ -168,7 +168,7 @@ const RegisterPage: React.FC = () => {
         <Container maxWidth="xs" sx={{ mt: 8, mb: 4 }}>
             <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
                 <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ fontWeight: 700 }}>
-                    Criar Conta
+                    Criar conta
                 </Typography>
                 <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
                     Preencha os dados para criar sua conta e sincronizar seu progresso
@@ -249,7 +249,7 @@ const RegisterPage: React.FC = () => {
                             onChange={handleTextChange('phone')}
                             onBlur={handlePhoneBlur}
                             error={Boolean(fieldErrors.phone)}
-                            helperText={fieldErrors.phone ?? 'Aceita 10 ou 11 digitos com DDD. Ex.: +5511999999999'}
+                            helperText={fieldErrors.phone ?? 'Ex.: +5511999999999'}
                             disabled={isSubmitDisabled}
                             aria-invalid={Boolean(fieldErrors.phone)}
                         />
@@ -340,7 +340,7 @@ const RegisterPage: React.FC = () => {
                         disabled={isSubmitDisabled}
                         sx={{ mt: 3, mb: 2, borderRadius: '999px', py: 1.5 }}
                     >
-                        {loading ? <CircularProgress size={24} color="inherit" /> : 'Registrar'}
+                        {loading ? <CircularProgress size={24} color="inherit" /> : 'Criar conta'}
                     </Button>
                     <Box sx={{ textAlign: 'center' }}>
                         <Link component={RouterLink} to="/login" variant="body2">

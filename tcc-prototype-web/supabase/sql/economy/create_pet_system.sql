@@ -224,7 +224,7 @@ BEGIN
         'pet_fed',
         'pet_feed',
         gen_random_uuid()::TEXT,
-        'Alimentacao do personagem virtual.'
+        'Alimentação do personagem virtual.'
     )
     RETURNING "transactionId" INTO v_transaction_id;
 

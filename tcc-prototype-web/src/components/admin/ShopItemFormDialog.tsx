@@ -26,6 +26,7 @@ import {
     normalizeShopItemFormValues,
     validateShopItemFormValues,
 } from '../../domain/shop/validation/shopItemAdminValidation';
+import { getShopCategoryLabel } from '../../lib/shopCategory';
 
 type ShopItemFormDialogProps = {
   open: boolean;
@@ -142,7 +143,7 @@ const ShopItemFormDialog: React.FC<ShopItemFormDialogProps> = ({
             />
 
             <TextField
-              label="Slug"
+              label="Tipo"
               value={values.slug}
               onChange={(event) => setValues((current) => ({ ...current, slug: event.target.value }))}
               error={Boolean(fieldErrors.slug)}
@@ -180,7 +181,7 @@ const ShopItemFormDialog: React.FC<ShopItemFormDialogProps> = ({
                 onChange={(event) => setValues((current) => ({ ...current, category: event.target.value as ShopItemFormValues['category'] }))}
               >
                 {SHOP_ITEM_CATEGORIES.map((category) => (
-                  <MenuItem key={category} value={category}>{category}</MenuItem>
+                  <MenuItem key={category} value={category}>{getShopCategoryLabel(category)}</MenuItem>
                 ))}
               </Select>
             </FormControl>

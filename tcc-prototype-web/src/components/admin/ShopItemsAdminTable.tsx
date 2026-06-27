@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import React from 'react';
 import type { ShopItem } from '../../domain/shop/types/shop';
+import { getShopCategoryLabel } from '../../lib/shopCategory';
 import { getShopRarityPresentation } from '../../lib/shopRarity';
 
 type ShopItemsAdminTableProps = {
@@ -49,12 +50,11 @@ const ShopItemsAdminTable: React.FC<ShopItemsAdminTableProps> = ({
         <TableHead>
           <TableRow>
             <TableCell>Nome</TableCell>
-            <TableCell>Slug</TableCell>
             <TableCell>Preço</TableCell>
             <TableCell>Categoria</TableCell>
             <TableCell>Raridade</TableCell>
             <TableCell>Status</TableCell>
-            <TableCell align="right">Ações</TableCell>
+            <TableCell align="center">Ações</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -75,9 +75,8 @@ const ShopItemsAdminTable: React.FC<ShopItemsAdminTableProps> = ({
                     )}
                   </Box>
                 </TableCell>
-                <TableCell>{item.slug}</TableCell>
                 <TableCell>{item.price}</TableCell>
-                <TableCell>{item.category}</TableCell>
+                <TableCell>{getShopCategoryLabel(item.category)}</TableCell>
                 <TableCell>
                   <Chip
                     size="small"
@@ -94,14 +93,20 @@ const ShopItemsAdminTable: React.FC<ShopItemsAdminTableProps> = ({
                   />
                 </TableCell>
                 <TableCell align="right">
-                  <Stack direction="row" spacing={1} justifyContent="flex-end">
-                    <Button size="small" variant="outlined" onClick={() => onEdit(item)}>
+                  <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end">
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      sx={{ minWidth: 96 }}
+                      onClick={() => onEdit(item)}
+                    >
                       Editar
                     </Button>
                     <Button
                       size="small"
                       color={item.isActive ? 'warning' : 'success'}
                       variant="contained"
+                      sx={{ minWidth: 96 }}
                       onClick={() => onToggleStatus(item)}
                     >
                       {item.isActive ? 'Desativar' : 'Ativar'}

@@ -56,7 +56,11 @@ function formatDateTime(value: string | null): string {
     return 'Ainda não há sessões concluídas';
   }
 
-  return new Date(value).toLocaleString('pt-BR');
+  return new Date(value).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+}
+
+function formatDateTimeShort(value: string): string {
+  return new Date(value).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
 }
 
 const DashboardPage: React.FC = () => {
@@ -344,7 +348,7 @@ const DashboardPage: React.FC = () => {
                   <React.Fragment key={sessionItem.sessionId}>
                     <ListItem disableGutters>
                       <ListItemText
-                        primary={`${formatMinutesFromSeconds(sessionItem.actualDurationSeconds)} • ${new Date(sessionItem.endedAt).toLocaleString('pt-BR')}`}
+                        primary={`${formatMinutesFromSeconds(sessionItem.actualDurationSeconds)} • ${formatDateTimeShort(sessionItem.endedAt)}`}
                         secondary={`Planejado: ${formatMinutesFromSeconds(sessionItem.plannedDurationSeconds)}${sessionItem.studyGoal ? ` • Objetivo: ${sessionItem.studyGoal}` : ''}${sessionItem.studySubject ? ` • Conteúdo: ${sessionItem.studySubject}` : ''}`}
                       />
                       <Chip
@@ -374,7 +378,7 @@ const DashboardPage: React.FC = () => {
                     <ListItem disableGutters>
                       <ListItemText
                         primary={activity.title}
-                        secondary={`${activity.description} • ${new Date(activity.createdAt).toLocaleString('pt-BR')}`}
+                        secondary={`${activity.description} • ${formatDateTimeShort(activity.createdAt)}`}
                       />
                       {activity.coinsDelta !== 0 && (
                         <Chip

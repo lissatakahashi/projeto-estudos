@@ -40,6 +40,7 @@ const PetStatusCard: React.FC<PetStatusCardProps> = ({ compact = false }) => {
   const hasSufficientBalanceToFeed = canFeedPetWithCurrentBalance(walletBalance);
   const insufficientFundsMessage = getPetFeedInsufficientFundsMessage();
   const feedButtonHelperId = 'pet-feed-helper-text';
+  const petTypeLabel = pet?.petType === 'owl' ? 'coruja' : pet?.petType;
 
   return (
     <Card variant="outlined" sx={{ borderRadius: 3, minHeight: compact ? 'unset' : 320 }}>
@@ -47,7 +48,7 @@ const PetStatusCard: React.FC<PetStatusCardProps> = ({ compact = false }) => {
         <Stack spacing={2}>
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              Pet Virtual
+              Pet virtual
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
               Alimente o pet para manter o estado de cuidado ativo no seu progresso de estudo.
@@ -92,7 +93,7 @@ const PetStatusCard: React.FC<PetStatusCardProps> = ({ compact = false }) => {
                     {pet.petName}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Tipo: {pet.petType}
+                    Tipo: {petTypeLabel}
                   </Typography>
                 </Box>
               </Stack>

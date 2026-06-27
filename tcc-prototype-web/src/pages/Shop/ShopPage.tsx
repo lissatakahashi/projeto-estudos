@@ -5,6 +5,7 @@ import {
   Card,
   CardActions,
   CardContent,
+  CardMedia,
   Chip,
   CircularProgress,
   Container,
@@ -55,7 +56,7 @@ const ShopPage: React.FC = () => {
       <Stack spacing={3}>
         <Box>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
-            Loja de Recompensas
+            Loja
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
             Troque moedas obtidas nas sessões de estudo por itens de personalização do seu ambiente.
@@ -145,6 +146,7 @@ const ShopPage: React.FC = () => {
               const pending = Boolean(pendingPurchaseByItemId[item.itemId]);
               const hasInsufficientBalance = !walletLoading && walletBalance < item.price;
               const disabled = pending || owned || !userId || hasInsufficientBalance;
+              const categoryLabel = item.category === 'theme' ? 'Tema' : item.category;
 
               const buttonLabel = (() => {
                 if (pending) return 'Processando compra...';
@@ -165,6 +167,14 @@ const ShopPage: React.FC = () => {
                     borderRadius: 3,
                   }}
                 >
+                  {item.imageUrl && (
+                    <CardMedia
+                      component="img"
+                      image={item.imageUrl}
+                      height="140"
+                      alt={`Visual do item ${item.name}`}
+                    />
+                  )}
                   <CardContent sx={{ flexGrow: 1 }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={1}>
                       <Typography variant="h6" sx={{ fontWeight: 700 }}>
@@ -182,7 +192,7 @@ const ShopPage: React.FC = () => {
                     </Stack>
 
                     <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap' }}>
-                      <Chip size="small" variant="outlined" label={item.category} sx={{ textTransform: 'capitalize' }} />
+                      <Chip size="small" variant="outlined" label={categoryLabel} sx={{ textTransform: 'capitalize' }} />
                       <Chip size="small" color="success" label={`${item.price} moedas`} />
                       {owned && <Chip size="small" color="info" label="Já no inventário" />}
                     </Stack>
@@ -191,11 +201,6 @@ const ShopPage: React.FC = () => {
                       {item.description}
                     </Typography>
 
-                    {item.imageUrl && (
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
-                        Referência visual disponivel para o item.
-                      </Typography>
-                    )}
                   </CardContent>
 
                   <CardActions sx={{ px: 2, pb: 2 }}>

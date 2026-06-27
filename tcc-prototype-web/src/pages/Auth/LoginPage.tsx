@@ -134,7 +134,7 @@ const LoginPage: React.FC = () => {
                     </Box>
                     <Box sx={{ textAlign: 'center' }}>
                         <Link component={RouterLink} to="/register" variant="body2">
-                            {"Não tem uma conta? Registre-se"}
+                            {"Não tem uma conta? Cadastre-se"}
                         </Link>
                     </Box>
                 </Box>

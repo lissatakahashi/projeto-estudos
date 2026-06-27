@@ -75,7 +75,7 @@ export function validateRegisterForm(values: RegisterFormValues): RegisterValida
   if (!values.phone.trim()) {
     errors.phone = 'Informe seu celular.';
   } else if (!phone) {
-    errors.phone = 'Informe um celular valido no padrao brasileiro.';
+    errors.phone = 'Informe um celular valido com DDI (ex.: +5511999999999).';
   }
 
   if (!password) {
